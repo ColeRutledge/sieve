@@ -43,6 +43,7 @@ def black(c: Context) -> None:
         return
     y_or_n = input("Apply changes? [y/n]: ").strip()
     if y_or_n.lower() == "y":
+        output = io.StringIO()
         c.run(
             command="poetry run black .",
             out_stream=output,
