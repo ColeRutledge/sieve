@@ -1,0 +1,37 @@
+default_stages: [commit]
+exclude: ^(.github/|.venv/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+      # - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        types: [python] # list of file types to run
+        language: python # the language of the hook
+        entry: poetry run flake8
+
+      - id: black
+        name: black
+        types: [python]
+        language: python
+        entry: poetry run black
+
+      - id: mypy
+        name: mypy
+        types: [python]
+        language: python
+        entry: poetry run mypy --pretty
+
+      - id: isort
+        name: isort
+        types: [python]
+        language: python
+        entry: poetry run isort
