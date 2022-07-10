@@ -1,0 +1,33 @@
+services:
+  sieve:
+    container_name: sieve
+    image: sieve:latest
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+      target: dev
+    restart: unless-stopped
+    depends_on: ["db", "browserless"]
+    volumes: ["/dev/shm:/dev/shm"]
+    env_file: ../.env
+
+  db:
+    container_name: postgres_db
+    image: postgres:sieve
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.postgres
+    restart: unless-stopped
+    volumes: ["postgres-db:/var/lib/postgresql/data"]
+    env_file: ../.env
+
+  browserless:
+    container_name: browserless
+    image: browserless/chrome:latest
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    env_file: ../.env
+
+volumes:
+  postgres-db:
+    name: sieve
