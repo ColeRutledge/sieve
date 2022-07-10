@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "sieve"
+version = "0.1.0"
+description = ""
+authors = ["Cole Rutledge <ColeRutledge@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+httpx = "^0.23.0"
+selenium = "^4.3.0"
+lxml = "^4.9.1"
+psycopg2-binary = "^2.9.3"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+rich = "^12.4.4"
+pre-commit = "^2.19.0"
+mypy = "^0.961"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+python_version = 3.10
+exclude = "^(.github/|.venv/)"
+# ignore_missing_imports = "true"
+# allow_redefinition = "true"
+
+[tool.isort]
+profile = "black"
+lines_between_types = "1" # number of lines to place between direct and from imports
