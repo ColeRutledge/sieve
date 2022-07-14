@@ -55,6 +55,8 @@ RUN poetry install --no-dev
 
 FROM base as dev
 
+ENV ENVIRONMENT="development"
+
 COPY --from=builder $POETRY_HOME $POETRY_HOME
 COPY --from=builder $PYSETUP_PATH $PYSETUP_PATH
 
@@ -85,6 +87,8 @@ ENTRYPOINT [ "/sieve/docker/entry.sh" ]
 ##############
 
 FROM base as prod
+
+ENV ENVIRONMENT="production"
 
 COPY --from=builder $VENV_PATH $VENV_PATH
 
