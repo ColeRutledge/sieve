@@ -35,4 +35,7 @@ ignore_missing_imports = "true"
 
 [tool.isort]
 profile = "black"
-lines_between_types = "1" # number of lines to place between direct and from imports
+# number of lines to place between direct and from imports
+lines_between_types = "1"
+# number of lines to place following all imports
+lines_after_imports = "2"
