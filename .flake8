@@ -1,0 +1,11 @@
+[flake8]
+
+exclude = .venv
+
+per-file-ignores =
+    # invalid escape sequence
+    tasks.py: W605
+
+ignore =
+    E501, # line too long -> handled by black
+    E266, # too many leading #
