@@ -1,25 +1,22 @@
 import io
 
-import monkeypatch
-
 from invoke import Context, task
-from rich import print
+
+from tasks import monkeypatch
+from tasks.console import Text, console
 
 monkeypatch.fix_annotations()
 
 
-GREEN = "[bold green]{message}[/bold green]"
-
-
 @task(aliases=["hi"])
 def hooks_install(c: Context) -> None:
-    print(GREEN.format(message="Installing hooks..."))
+    console.print("Installing hooks...", style="bold green")
     c.run("poetry run pre-commit install")
 
 
 @task(aliases=["hr"])
 def hooks_run(c: Context) -> None:
-    print(GREEN.format(message="Running hooks..."))
+    console.print("Running hooks...", style="bold green")
     c.run("poetry run pre-commit run --all-files")
 
 
@@ -30,7 +27,7 @@ def hooks(c: Context) -> None:
 
 @task(aliases=["bl"])
 def black(c: Context) -> None:
-    print(GREEN.format(message="Running black..."))
+    console.print("Running black...", style="bold green")
     output = io.StringIO()
     c.run(
         command="poetry run black . --diff",
@@ -38,11 +35,12 @@ def black(c: Context) -> None:
         err_stream=output,
         encoding="utf-8",
     )
-    print(output.getvalue(), flush=True)
+    console.print(output.getvalue())
     if "file would be reformatted" not in output.getvalue():
         return
-    y_or_n = input("Apply changes? [y/n]: ").strip()
-    if y_or_n.lower() == "y":
+    text = Text.assemble(Text("Apply changes? ", style="#EEE8AA"), Text("[y/n]: ", style="#D8BFD8"))
+    should_apply = console.input(text).lower().strip() == "y"
+    if should_apply:
         output = io.StringIO()
         c.run(
             command="poetry run black .",
@@ -50,4 +48,4 @@ def black(c: Context) -> None:
             err_stream=output,
             encoding="utf-8",
         )
-        print(output.getvalue())
+        console.print(output.getvalue())
