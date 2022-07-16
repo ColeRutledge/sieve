@@ -9,7 +9,13 @@ services:
     restart: unless-stopped
     depends_on: ["db", "browserless"]
     volumes: ["/dev/shm:/dev/shm"]
-    env_file: ../.env
+    environment:
+      EMAIL: ${EMAIL}
+      EPASS: ${EPASS}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_HOST: ${DB_HOST}
 
   db:
     container_name: postgres_db
@@ -19,14 +25,18 @@ services:
       dockerfile: ./docker/Dockerfile.postgres
     restart: unless-stopped
     volumes: ["postgres-db:/var/lib/postgresql/data"]
-    env_file: ../.env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
   browserless:
     container_name: browserless
     image: browserless/chrome:latest
     restart: unless-stopped
     ports: ["3000:3000"]
-    env_file: ../.env
+    environment:
+      QUEUE_LENGTH: "0"
+      MAX_CONCURRENT_SESSIONS: "1"
+      CONNECTION_TIMEOUT: "1800000"
 
 volumes:
   postgres-db:
