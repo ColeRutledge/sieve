@@ -8,7 +8,6 @@ jobs:
     environment:
       REGISTRY: ghcr.io
       APP_NAME: sieve
-      IMAGE_NAME: $REGISTRY/$CR_USERNAME/$APP_NAME:latest
 
     steps:
       - checkout
@@ -40,7 +39,7 @@ jobs:
       - run:
           name: tag images
           command: |
-            docker image tag $APP_NAME:latest $IMAGE_NAME
+            docker image tag $APP_NAME:latest $IMAGE_NAME:latest
 
       - run:
           name: check containers
