@@ -67,7 +67,7 @@ WORKDIR /sieve
 COPY docker docker
 COPY tasks tasks
 COPY sieve sieve
-COPY setup.cfg .
+COPY .flake8 .
 
 # copy crontab and set non-root permissions
 COPY docker/run_sieve /var/spool/cron/crontabs/

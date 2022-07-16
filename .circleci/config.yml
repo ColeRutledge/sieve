@@ -3,11 +3,31 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alpine:3.15
+      - image: cimg/base:2021.04
 
     steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+
       - run:
-          name: The First Step
+          name: check docker compose version
           command: |
-            echo "Hello world!"
-            echo "This is the delivery pipeline"
+            docker compose version
+
+      - run:
+          name: build
+          command: |
+            docker compose -f "docker\docker-compose.yml" up -d --build
+
+      - run:
+          name: check containers
+          command: |
+            docker ps
+
+      - run:
+          name: shut down
+          command: |
+            docker compose -f "docker\docker-compose.yml" down
