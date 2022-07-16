@@ -31,3 +31,8 @@ jobs:
           name: shut down
           command: |
             docker-compose -f "./docker/docker-compose.yml" down
+
+      - run:
+          name: final step
+          command: |
+            echo "FINISHED!"
