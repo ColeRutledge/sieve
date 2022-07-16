@@ -5,6 +5,11 @@ jobs:
     docker:
       - image: cimg/base:2021.04
 
+    environment:
+      REGISTRY: ghcr.io
+      APP_NAME: sieve
+      IMAGE_NAME: $REGISTRY/$CR_USERNAME/$APP_NAME:latest
+
     steps:
       - checkout
 
@@ -33,6 +38,16 @@ jobs:
             docker-compose -f "./docker/docker-compose.yml" down
 
       - run:
+          name: tag images
+          command: |
+            docker image tag $APP_NAME:latest $IMAGE_NAME
+
+      - run:
+          name: check containers
+          command: |
+            docker ps
+
+      - run:
           name: ghcr login
           command: |
             echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
@@ -40,7 +55,7 @@ jobs:
       - run:
           name: push to registry
           command: |
-            docker push $REGISTRY/$IMAGE_NAME:latest
+            docker push $IMAGE_NAME
 
       - run:
           name: final step
