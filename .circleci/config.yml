@@ -13,6 +13,11 @@ jobs:
           docker_layer_caching: true
 
       - run:
+          name: ghcr login
+          command: |
+            echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+
+      - run:
           name: check docker compose version
           command: |
             docker-compose -v
@@ -31,6 +36,11 @@ jobs:
           name: shut down
           command: |
             docker-compose -f "./docker/docker-compose.yml" down
+
+      - run:
+          name: push to registry
+          command: |
+            docker push $REGISTRY/$IMAGE_NAME:latest
 
       - run:
           name: final step
