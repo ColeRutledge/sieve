@@ -65,9 +65,8 @@ RUN poetry install
 
 WORKDIR /sieve
 COPY docker docker
-COPY tasks tasks
 COPY sieve sieve
-COPY .flake8 .
+COPY .flake8 pyproject.toml ./
 
 # copy crontab and set non-root permissions
 COPY docker/run_sieve /var/spool/cron/crontabs/
@@ -75,6 +74,7 @@ RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP /var/spool/cron/crontabs/ \
     && chmod +x /var/spool/cron/crontabs/run_sieve \
     && crontab -u $NON_ROOT_USER /var/spool/cron/crontabs/run_sieve
 
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP /sieve
 RUN chmod +x /sieve/docker/entry.sh
 
 USER $NON_ROOT_USER
@@ -102,6 +102,7 @@ RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP /var/spool/cron/crontabs/ \
     && chmod +x /var/spool/cron/crontabs/run_sieve \
     && crontab -u $NON_ROOT_USER /var/spool/cron/crontabs/run_sieve
 
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP /sieve
 RUN chmod +x /sieve/docker/entry.sh
 
 USER $NON_ROOT_USER

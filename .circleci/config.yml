@@ -17,46 +17,41 @@ jobs:
           docker_layer_caching: true
 
       - run:
-          name: check docker compose version
-          command: |
-            docker-compose -v
-
-      - run:
-          name: build
+          name: build & run
           command: |
             docker-compose -f "./docker/docker-compose.yml" up -d --build
 
       - run:
-          name: check containers
+          name: flake8
           command: |
-            docker ps
+            docker exec $APP_NAME flake8 . --jobs=1
 
       - run:
-          name: shut down
+          name: black
           command: |
-            docker-compose -f "./docker/docker-compose.yml" down
+            docker exec $APP_NAME black .
 
       - run:
-          name: tag images
+          name: mypy
+          command: |
+            docker exec $APP_NAME mypy --pretty --follow-imports=silent .
+
+      - run:
+          name: isort
+          command: |
+            docker exec $APP_NAME isort .
+
+      - run:
+          name: tag image
           command: |
             docker image tag $APP_NAME:latest $IMAGE_NAME:latest
 
       - run:
-          name: check containers
-          command: |
-            docker ps
-
-      - run:
-          name: ghcr login
+          name: container registry login
           command: |
             echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
 
       - run:
-          name: push to registry
+          name: push to container registry
           command: |
             docker push $IMAGE_NAME
-
-      - run:
-          name: final step
-          command: |
-            echo "FINISHED!"
