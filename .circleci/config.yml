@@ -17,44 +17,36 @@ jobs:
           docker_layer_caching: true
 
       - run:
-          name: build & run
-          command: |
-            docker-compose -f ./docker/docker-compose.yml up -d --build
+          name: compose up
+          command: docker-compose -f ./docker/docker-compose.test.yml up -d --build
 
       - run:
           name: flake8
-          command: |
-            docker exec $APP_NAME flake8 . --jobs=1
+          command: docker exec $APP_NAME flake8 . --jobs=1
 
       - run:
           name: black
-          command: |
-            docker exec $APP_NAME black .
+          command: docker exec $APP_NAME black .
 
       - run:
           name: mypy
-          command: |
-            docker exec $APP_NAME mypy --pretty --follow-imports=silent .
+          command: docker exec $APP_NAME mypy --pretty --follow-imports=silent .
 
       - run:
           name: isort
-          command: |
-            docker exec $APP_NAME isort .
+          command: docker exec $APP_NAME isort .
 
       - run:
-          name: tag image
-          command: |
-            docker image tag $APP_NAME:latest $IMAGE_NAME:latest
+          name: retag image
+          command: docker image tag $APP_NAME:latest $IMAGE_NAME:latest
 
       - run:
-          name: container registry login
-          command: |
-            echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
 
       - run:
-          name: push to container registry
-          command: |
-            docker push $IMAGE_NAME
+          name: push to registry
+          command: docker push $IMAGE_NAME
 
   deploy:
     docker:

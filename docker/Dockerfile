@@ -7,12 +7,18 @@ FROM python:3.10-slim as base
 ENV APP_ROOT="/sieve" \
     NON_ROOT_USER="sieve_user" \
     NON_ROOT_GROUP="sieve_group" \
+    ENTRYPOINT_PATH="/sieve/docker/entry.sh" \
+    CRONTAB="run_sieve" \
+    CRONTAB_PATH="/var/spool/cron/crontabs/run_sieve" \
+    CRONTABS_BASE="/var/spool/cron/crontabs/" \
+    \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
     POETRY_HOME="/opt/poetry" \
+    POETRY_BINARY_PATH="/opt/poetry/bin/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
     PYSETUP_PATH="/opt/pysetup" \
@@ -28,8 +34,8 @@ RUN apt-get update \
     && touch /var/log/cron.log
 
 # create non-root user
-RUN addgroup --system $NON_ROOT_GROUP
-RUN adduser --system --group $NON_ROOT_USER
+RUN addgroup --system $NON_ROOT_GROUP \
+    && adduser --system --group $NON_ROOT_USER
 
 
 ###########
@@ -57,6 +63,10 @@ FROM base as dev
 
 ENV ENVIRONMENT="development"
 
+# install git for pre-commit hooks
+RUN apt-get -y --no-install-recommends install git \
+    && apt-get clean
+
 COPY --from=builder $POETRY_HOME $POETRY_HOME
 COPY --from=builder $PYSETUP_PATH $PYSETUP_PATH
 
@@ -67,16 +77,16 @@ WORKDIR $APP_ROOT
 COPY docker docker
 COPY tasks tasks
 COPY sieve sieve
-COPY .flake8 pyproject.toml ./
+COPY .flake8 .pre-commit-config.yaml pyproject.toml ./
 
 # copy crontab and set non-root permissions
-COPY docker/run_sieve /var/spool/cron/crontabs/
-RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP /var/spool/cron/crontabs/ \
-    && chmod +x /var/spool/cron/crontabs/run_sieve \
-    && crontab -u $NON_ROOT_USER /var/spool/cron/crontabs/run_sieve
+COPY docker/${CRONTAB} $CRONTABS_BASE
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $CRONTABS_BASE \
+    && chmod +x $CRONTAB_PATH \
+    && crontab -u $NON_ROOT_USER $CRONTAB_PATH
 
-RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $APP_ROOT
-RUN chmod +x /sieve/docker/entry.sh
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $APP_ROOT \
+    && chmod +x $ENTRYPOINT_PATH $POETRY_BINARY_PATH
 
 USER $NON_ROOT_USER
 
@@ -98,13 +108,13 @@ COPY docker docker
 COPY sieve sieve
 
 # copy crontab and set non-root permissions
-COPY docker/run_sieve /var/spool/cron/crontabs/
-RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP /var/spool/cron/crontabs/ \
-    && chmod +x /var/spool/cron/crontabs/run_sieve \
-    && crontab -u $NON_ROOT_USER /var/spool/cron/crontabs/run_sieve
+COPY docker/${CRONTAB} $CRONTABS_BASE
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $CRONTABS_BASE \
+    && chmod +x $CRONTAB_PATH \
+    && crontab -u $NON_ROOT_USER $CRONTAB_PATH
 
-RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $APP_ROOT
-RUN chmod +x /sieve/docker/entry.sh
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $APP_ROOT \
+    && chmod +x $ENTRYPOINT_PATH
 
 USER $NON_ROOT_USER
 
