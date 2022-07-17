@@ -62,7 +62,6 @@ jobs:
 
     environment:
       REGISTRY: ghcr.io
-      APP_NAME: sieve
 
     steps:
       - run:
@@ -86,14 +85,15 @@ workflows:
   deployment:
     jobs:
       - build:
-        filters:
-          branches:
-            only:
-              - circleci
+          filters:
+            branches:
+              only:
+                - circleci
+
       - deploy:
-        filters:
-          branches:
-            only:
-              - circleci
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - circleci
