@@ -69,15 +69,17 @@ jobs:
           command: |
             ssh -oStrictHostKeyChecking=no -v $HOST_USER@$HOST "
               cd code
-              export DB_NAME=$(echo $DB_NAME)
-              export DB_USER=$(echo $DB_USER)
-              export DB_HOST=$(echo $DB_HOST)
-              export DB_PASS=$(echo $DB_PASS)
-              export EMAIL=$(echo $EMAIL)
-              export EPASS=$(echo $EPASS)
-              export POSTGRES_PASSWORD=$(echo $POSTGRES_PASSWORD)
+              export DB_NAME=$DB_NAME
+              export DB_USER=$DB_USER
+              export DB_HOST=$DB_HOST
+              export DB_PASS=$DB_PASS
+              export EMAIL=$EMAIL
+              export EPASS=$EPASS
+              export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
               echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-              docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):latest
+              docker pull $REGISTRY/$IMAGE_NAME:latest
+              docker-compose -f docker-compose.yml up -d $IMAGE_NAME
+              docker image prune
             "
 
 workflows:
