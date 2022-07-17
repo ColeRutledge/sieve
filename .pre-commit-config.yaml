@@ -9,7 +9,10 @@ repos:
       - id: end-of-file-fixer
       - id: check-toml
       - id: mixed-line-ending
-      # - id: check-added-large-files
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: no-commit-to-branch # defaults to main and master
+      - id: check-added-large-files
 
   - repo: local
     hooks:

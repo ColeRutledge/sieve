@@ -55,3 +55,39 @@ jobs:
           name: push to container registry
           command: |
             docker push $IMAGE_NAME
+
+  deploy:
+    docker:
+      - image: cimg/base:2021.04
+
+    environment:
+      REGISTRY: ghcr.io
+      APP_NAME: sieve
+
+    steps:
+      - run:
+          name: ssh
+          command: |
+            ssh -oStrictHostKeyChecking=no -v $HOST_USER@$HOST "
+              cd code
+              export DB_NAME=$(echo $DB_NAME)
+              export DB_USER=$(echo $DB_USER)
+              export DB_HOST=$(echo $DB_HOST)
+              export DB_PASS=$(echo $DB_PASS)
+              export EMAIL=$(echo $EMAIL)
+              export EPASS=$(echo $EPASS)
+              export POSTGRES_PASSWORD=$(echo $POSTGRES_PASSWORD)
+              docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):latest
+            "
+
+workflows:
+  version: 2
+  deployment:
+    jobs:
+      - deploy:
+        filters:
+          branches:
+            only:
+              - circleci
+          requires:
+            - build
