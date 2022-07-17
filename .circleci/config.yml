@@ -65,7 +65,7 @@ jobs:
 
     steps:
       - run:
-          name: ssh
+          name: ssh release
           command: |
             ssh -oStrictHostKeyChecking=no -v $HOST_USER@$HOST "
               cd code
