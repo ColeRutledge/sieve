@@ -1,5 +1,5 @@
-import rich
+from tasks.console import console
 
 
 if __name__ == "__main__":
-    rich.print("Hello world!")
+    console.log("Hello world!", style="bold green")
