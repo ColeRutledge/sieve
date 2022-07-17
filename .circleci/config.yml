@@ -77,6 +77,7 @@ jobs:
               export EMAIL=$(echo $EMAIL)
               export EPASS=$(echo $EPASS)
               export POSTGRES_PASSWORD=$(echo $POSTGRES_PASSWORD)
+              echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
               docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):latest
             "
 
@@ -84,6 +85,11 @@ workflows:
   version: 2
   deployment:
     jobs:
+      - build:
+        filters:
+          branches:
+            only:
+              - circleci
       - deploy:
         filters:
           branches:
