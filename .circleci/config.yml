@@ -62,6 +62,7 @@ jobs:
 
     environment:
       REGISTRY: ghcr.io
+      APP_NAME: sieve
 
     steps:
       - run:
@@ -78,7 +79,7 @@ jobs:
               export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
               echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
               docker pull $IMAGE_NAME:latest
-              docker-compose -f docker-compose.yml up -d $IMAGE_NAME
+              docker-compose -f docker-compose.yml up -d $APP_NAME
               docker image prune
             "
 
