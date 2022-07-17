@@ -8,4 +8,4 @@
 # │ │ │ │ │
 # * * * * *  command_to_execute
 
-* * * * * cd /sieve && /opt/pysetup/.venv/bin/python3 -m sieve > /proc/1/fd/1 2>/proc/1/fd/2
+*/5 * * * * cd /sieve && /opt/pysetup/.venv/bin/python3 -m sieve > /proc/1/fd/1 2>/proc/1/fd/2
