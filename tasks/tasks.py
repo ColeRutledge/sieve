@@ -36,9 +36,7 @@ def developer_up(c: Context) -> None:
 @task(aliases=["dd"])
 def developer_down(c: Context) -> None:
     console.print(f"{' DEV SHUTDOWN ':~^75}", style="green")
-    c.run("docker-compose -f ./docker/docker-compose.yml --profile support down")
-    c.run("docker stop sieve")
-    c.run("docker rm sieve")
+    c.run("docker-compose -f ./docker/docker-compose.yml down --remove-orphans")
 
 
 @task(aliases=["hi"])
