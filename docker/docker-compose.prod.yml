@@ -5,4 +5,4 @@ services:
 
   browserless:
     environment:
-      ENABLE_DEBUGGER: false
+      ENABLE_DEBUGGER: "false"
