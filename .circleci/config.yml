@@ -1,0 +1,90 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2021.04
+
+    environment:
+      REGISTRY: ghcr.io
+      APP_NAME: sieve
+
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+
+      - run:
+          name: compose up
+          command: docker-compose -f ./docker/docker-compose.test.yml up -d --build
+
+      - run:
+          name: flake8
+          command: docker exec $APP_NAME flake8 . --jobs=1
+
+      - run:
+          name: black
+          command: docker exec $APP_NAME black .
+
+      - run:
+          name: mypy
+          command: docker exec $APP_NAME mypy --pretty --follow-imports=silent .
+
+      - run:
+          name: isort
+          command: docker exec $APP_NAME isort .
+
+      - run:
+          name: retag image
+          command: docker image tag $APP_NAME:latest $IMAGE_NAME:latest
+
+      - run:
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+
+      - run:
+          name: push to registry
+          command: docker push $IMAGE_NAME
+
+  deploy:
+    docker:
+      - image: cimg/base:2021.04
+
+    environment:
+      REGISTRY: ghcr.io
+      APP_NAME: sieve
+
+    steps:
+      - run:
+          name: ssh release
+          command: |
+            ssh -oStrictHostKeyChecking=no -v $HOST_USER@$HOST "
+              cd ~/code
+              export DB_NAME=$DB_NAME
+              export DB_USER=$DB_USER
+              export DB_HOST=$DB_HOST
+              export DB_PASS=$DB_PASS
+              export EMAIL=$EMAIL
+              export EPASS=$EPASS
+              export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+              echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+              docker pull $IMAGE_NAME:latest
+              docker-compose -f docker-compose.yml up -d $APP_NAME
+              docker image prune
+            "
+
+workflows:
+  version: 2
+  deployment:
+    jobs:
+      - build
+
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
