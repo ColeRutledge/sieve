@@ -1,5 +1,10 @@
 #! /bin/bash
-set -e
+
+# Bash "strict mode", to help catch problems and bugs in the shell
+# script. Every bash script you write should include this. See
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/ for
+# details.
+set -euo pipefail
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';
