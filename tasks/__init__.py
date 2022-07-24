@@ -4,8 +4,8 @@ from tasks import monkeypatch, tasks  # noqa
 
 
 namespace = Collection()
-namespace.add_task(tasks.docker_up)
-namespace.add_task(tasks.docker_down)
+namespace.add_task(tasks.developer_up)
+namespace.add_task(tasks.developer_down)
 namespace.add_task(tasks.black)
 namespace.add_task(tasks.hooks)
 namespace.add_task(tasks.hooks_run)

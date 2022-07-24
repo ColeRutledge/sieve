@@ -4,6 +4,10 @@ services:
     image: sieve:latest
     restart: unless-stopped
     env_file: ../.env
+    networks:
+      - sieve-network
+    profiles:
+      - primary
     depends_on:
       - "db"
       - "browserless"
@@ -12,14 +16,18 @@ services:
       dockerfile: ./docker/Dockerfile
       target: dev
     volumes:
-      - "/dev/shm:/dev/shm"
-      - '..:/sieve'
+      - "..:/sieve"
 
   db:
     container_name: postgres_db
     image: postgres:sieve
     restart: unless-stopped
     env_file: ../.env
+    networks:
+      - sieve-network
+    profiles:
+      - primary
+      - support
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.postgres
@@ -31,9 +39,18 @@ services:
     image: browserless/chrome:latest
     restart: unless-stopped
     env_file: ../.env
+    networks:
+      - sieve-network
+    profiles:
+      - primary
+      - support
     ports:
       - "3000:3000"
 
 volumes:
   postgres-db:
+    name: sieve
+
+networks:
+  sieve-network:
     name: sieve

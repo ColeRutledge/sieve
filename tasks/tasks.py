@@ -1,5 +1,7 @@
 import io
 
+from pathlib import Path
+
 from invoke import Context, task
 
 from tasks import monkeypatch
@@ -9,20 +11,34 @@ from tasks.console import Text, console
 monkeypatch.fix_annotations()
 
 
-@task(aliases=["du"])
-def docker_up(c: Context) -> None:
-    # TODO: add cross platform path handling
-    console.log(f"{' DEV STARTUP ':~^50}", style="green")
-    compose_file = "-f .\docker\docker-compose.yml"
-    c.run(f"docker-compose {compose_file} up -d --build")
+@task(aliases=["du", "dev"])
+def developer_up(c: Context) -> None:
+    console.print(f"{' DEV STARTUP ':~^75}", style="green")
+    project_root = Path().absolute()
+    c.run("docker compose -f ./docker/docker-compose.yml build")
+    c.run("docker-compose -f ./docker/docker-compose.yml --profile support up -d")
+    c.run(
+        "docker run "
+        "--tty "
+        "--detach "
+        "--name sieve "
+        "--publish 5678:5678 "
+        "--network=sieve "
+        "--restart unless-stopped "
+        f'--mount type=bind,source="{project_root}",target=/sieve '
+        "--env-file=.env "
+        '--entrypoint="" '
+        "sieve:latest "
+        '"sh" "-c" "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m sieve.__main__"'
+    )
 
 
 @task(aliases=["dd"])
-def docker_down(c: Context) -> None:
-    # TODO: add cross platform path handling
-    console.log(f"{'DEV SHUTDOWN':~^50}", style="red")
-    compose_file = "-f .\docker\docker-compose.yml"
-    c.run(f"docker-compose {compose_file} down")
+def developer_down(c: Context) -> None:
+    console.print(f"{' DEV SHUTDOWN ':~^75}", style="green")
+    c.run("docker-compose -f ./docker/docker-compose.yml --profile support down")
+    c.run("docker stop sieve")
+    c.run("docker rm sieve")
 
 
 @task(aliases=["hi"])

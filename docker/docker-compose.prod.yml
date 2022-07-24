@@ -1,48 +1,9 @@
 services:
   sieve:
-    container_name: sieve
     image: sieve:prod
-    restart: unless-stopped
-    depends_on:
-      - "db"
-      - "browserless"
     build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
       target: prod
-    volumes:
-      - "/dev/shm:/dev/shm"
-    environment:
-      EMAIL: ${EMAIL}
-      EPASS: ${EPASS}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_HOST: ${DB_HOST}
-
-  db:
-    container_name: postgres_db
-    image: postgres:sieve
-    restart: unless-stopped
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile.postgres
-    volumes:
-      - "postgres-db:/var/lib/postgresql/data"
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
   browserless:
-    container_name: browserless
-    image: browserless/chrome:latest
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
-      QUEUE_LENGTH: "0"
-      MAX_CONCURRENT_SESSIONS: "1"
-      CONNECTION_TIMEOUT: "1800000"
-
-volumes:
-  postgres-db:
-    name: sieve
+      ENABLE_DEBUGGER: false
