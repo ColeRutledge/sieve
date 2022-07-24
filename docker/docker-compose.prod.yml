@@ -1,6 +1,5 @@
 services:
   sieve:
-    image: sieve:prod
     build:
       target: prod
 
