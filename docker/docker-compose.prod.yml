@@ -1,0 +1,9 @@
+services:
+  sieve:
+    image: sieve:prod
+    build:
+      target: prod
+
+  browserless:
+    environment:
+      ENABLE_DEBUGGER: false
