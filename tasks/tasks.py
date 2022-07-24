@@ -1,5 +1,7 @@
 import io
 
+from pathlib import Path
+
 from invoke import Context, task
 
 from tasks import monkeypatch
@@ -9,16 +11,46 @@ from tasks.console import Text, console
 monkeypatch.fix_annotations()
 
 
+@task(aliases=["du", "dev"])
+def developer_up(c: Context) -> None:
+    console.print(f"{' DEV STARTUP ':~^75}", style="green")
+    project_root = Path().absolute()
+    c.run("docker compose -f ./docker/docker-compose.yml build")
+    c.run("docker-compose -f ./docker/docker-compose.yml --profile support up -d")
+    c.run(
+        "docker run "
+        "--tty "
+        "--detach "
+        "--name sieve "
+        "--publish 5678:5678 "
+        "--network=sieve "
+        "--restart unless-stopped "
+        f'--mount type=bind,source="{project_root}",target=/sieve '
+        "--env-file=.env "
+        '--entrypoint="" '
+        "sieve:latest "
+        '"sh" "-c" "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m sieve.__main__"'
+    )
+
+
+@task(aliases=["dd"])
+def developer_down(c: Context) -> None:
+    console.print(f"{' DEV SHUTDOWN ':~^75}", style="green")
+    c.run("docker-compose -f ./docker/docker-compose.yml --profile support down")
+    c.run("docker stop sieve")
+    c.run("docker rm sieve")
+
+
 @task(aliases=["hi"])
 def hooks_install(c: Context) -> None:
     console.print("Installing hooks...", style="bold green")
-    c.run("poetry run pre-commit install")
+    c.run("pre-commit install")
 
 
 @task(aliases=["hr"])
 def hooks_run(c: Context) -> None:
     console.print("Running hooks...", style="bold green")
-    c.run("poetry run pre-commit run --all-files")
+    c.run("pre-commit run --all-files")
 
 
 @task(hooks_install, hooks_run, aliases=["h"])
@@ -31,7 +63,7 @@ def black(c: Context) -> None:
     console.print("Running black...", style="bold green")
     output = io.StringIO()
     c.run(
-        command="poetry run black . --diff",
+        command="black . --diff",
         out_stream=output,
         err_stream=output,
         encoding="utf-8",
@@ -44,7 +76,7 @@ def black(c: Context) -> None:
     if should_apply:
         output = io.StringIO()
         c.run(
-            command="poetry run black .",
+            command="black .",
             out_stream=output,
             err_stream=output,
             encoding="utf-8",
