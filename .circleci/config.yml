@@ -53,7 +53,6 @@ jobs:
       - run:
           name: pull image
           command: docker pull $IMAGE_NAME:dev
-
       - run:
           name: black
           command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "black ."
