@@ -1,6 +1,7 @@
 services:
   sieve:
     build:
+      image: sieve:latest
       target: prod
 
   browserless:

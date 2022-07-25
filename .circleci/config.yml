@@ -16,6 +16,18 @@ jobs:
           name: compose build
           command: docker-compose -f ./docker/docker-compose.test.yml build
 
+      - run:
+          name: retag image
+          command: docker image tag $APP_NAME:dev $IMAGE_NAME:dev
+
+      - run:
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+
+      - run:
+          name: push to registry
+          command: docker push $IMAGE_NAME:dev
+
   flake8:
     docker:
       - image: cimg/base:2021.04
@@ -23,13 +35,17 @@ jobs:
     steps:
       - checkout
 
-      - setup_remote_docker:
-          version: 20.10.14
-          docker_layer_caching: true
+      # - setup_remote_docker:
+      #     version: 20.10.14
+      #     docker_layer_caching: true
 
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
+
+      # - run:
+      #     name: compose build
+      #     command: docker-compose -f ./docker/docker-compose.test.yml build
 
       - run:
           name: flake8
@@ -42,13 +58,17 @@ jobs:
     steps:
       - checkout
 
-      - setup_remote_docker:
-          version: 20.10.14
-          docker_layer_caching: true
+      # - setup_remote_docker:
+      #     version: 20.10.14
+      # docker_layer_caching: true
 
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
+
+      # - run:
+      #     name: compose build
+      #     command: docker-compose -f ./docker/docker-compose.test.yml build
 
       - run:
           name: black
@@ -63,11 +83,15 @@ jobs:
 
       - setup_remote_docker:
           version: 20.10.14
-          docker_layer_caching: true
+          # docker_layer_caching: true
 
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
+
+      # - run:
+      #     name: compose build
+      #     command: docker-compose -f ./docker/docker-compose.test.yml build
 
       - run:
           name: mypy
@@ -85,8 +109,16 @@ jobs:
           docker_layer_caching: true
 
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
+
+      - run:
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+
+      # - run:
+      #     name: compose build
+      #     command: docker-compose -f ./docker/docker-compose.test.yml build
 
       - run:
           name: isort
@@ -109,7 +141,7 @@ jobs:
 
       - run:
           name: retag image
-          command: docker image tag $APP_NAME:latest $IMAGE_NAME:latest
+          command: docker image tag $APP_NAME:prod $IMAGE_NAME:prod
 
       - run:
           name: registry login
@@ -137,7 +169,7 @@ jobs:
               export EPASS=$EPASS
               export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
               echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-              docker pull $IMAGE_NAME:latest
+              docker pull $IMAGE_NAME:prod
               docker-compose -f docker-compose.yml up -d $APP_NAME
               docker image prune
             "
