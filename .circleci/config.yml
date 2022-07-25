@@ -48,7 +48,7 @@ jobs:
     steps:
       - setup_remote_docker:
           version: 20.10.14
-        docker_layer_caching: true
+          docker_layer_caching: true
       - run:
           name: registry login
           command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
