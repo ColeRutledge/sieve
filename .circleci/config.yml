@@ -7,90 +7,89 @@ jobs:
 
     steps:
       - checkout
-
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: true
-
       - run:
           name: compose build
           command: docker-compose -f ./docker/docker-compose.test.yml build
+      - run:
+          name: retag image
+          command: docker image tag $APP_NAME:dev $IMAGE_NAME:dev
+      - run:
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+      - run:
+          name: push to registry
+          command: docker push $IMAGE_NAME:dev
 
   flake8:
     docker:
       - image: cimg/base:2021.04
 
     steps:
-      - checkout
-
       - setup_remote_docker:
           version: 20.10.14
-          docker_layer_caching: true
-
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
-
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+      - run:
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
       - run:
           name: flake8
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "flake8 ."
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "flake8 ."
 
   black:
     docker:
       - image: cimg/base:2021.04
 
     steps:
-      - checkout
-
       - setup_remote_docker:
           version: 20.10.14
-          docker_layer_caching: true
-
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
-
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+      - run:
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
       - run:
           name: black
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "black ."
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "black ."
 
   mypy:
     docker:
       - image: cimg/base:2021.04
 
     steps:
-      - checkout
-
       - setup_remote_docker:
           version: 20.10.14
-          docker_layer_caching: true
-
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
-
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+      - run:
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
       - run:
           name: mypy
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "mypy --pretty --follow-imports=silent ."
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "mypy --pretty --follow-imports=silent ."
 
   isort:
     docker:
       - image: cimg/base:2021.04
 
     steps:
-      - checkout
-
       - setup_remote_docker:
           version: 20.10.14
-          docker_layer_caching: true
-
       - run:
-          name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
-
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+      - run:
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
       - run:
           name: isort
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "isort ."
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "isort ."
 
   build_prod:
     docker:
@@ -98,23 +97,18 @@ jobs:
 
     steps:
       - checkout
-
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: true
-
       - run:
           name: compose build
           command: docker-compose -f ./docker/docker-compose.test.yml -f ./docker/docker-compose.prod.yml build
-
       - run:
           name: retag image
-          command: docker image tag $APP_NAME:latest $IMAGE_NAME:latest
-
+          command: docker image tag $APP_NAME:prod $IMAGE_NAME:prod
       - run:
           name: registry login
           command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-
       - run:
           name: push to registry
           command: docker push $IMAGE_NAME
@@ -137,14 +131,14 @@ jobs:
               export EPASS=$EPASS
               export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
               echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-              docker pull $IMAGE_NAME:latest
+              docker pull $IMAGE_NAME:prod
               docker-compose -f docker-compose.yml up -d $APP_NAME
               docker image prune
             "
 
 workflows:
   version: 2
-  deployment:
+  cicd:
     jobs:
       - build_dev
 

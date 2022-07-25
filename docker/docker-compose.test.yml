@@ -1,7 +1,7 @@
 services:
   sieve:
     container_name: sieve
-    image: sieve:latest
+    image: sieve:dev
     restart: unless-stopped
     depends_on:
       - "db"
