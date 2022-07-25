@@ -111,7 +111,7 @@ jobs:
           command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
       - run:
           name: push to registry
-          command: docker push $IMAGE_NAME
+          command: docker push $IMAGE_NAME:prod
 
   deploy:
     docker:
