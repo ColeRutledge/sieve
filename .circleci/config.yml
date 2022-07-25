@@ -40,7 +40,7 @@ jobs:
           command: docker pull $IMAGE_NAME:dev
       - run:
           name: flake8
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "flake8 ."
+          command: docker run --rm --entrypoint="" $APP_NAME:dev "sh" "-c" "flake8 ."
 
   black:
     docker:
@@ -60,7 +60,7 @@ jobs:
 
       - run:
           name: black
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "black ."
+          command: docker run --rm --entrypoint="" $APP_NAME:dev "sh" "-c" "black ."
 
   mypy:
     docker:
@@ -79,7 +79,7 @@ jobs:
           command: docker pull $IMAGE_NAME:dev
       - run:
           name: mypy
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "mypy --pretty --follow-imports=silent ."
+          command: docker run --rm --entrypoint="" $APP_NAME:dev "sh" "-c" "mypy --pretty --follow-imports=silent ."
 
   isort:
     docker:
@@ -98,7 +98,7 @@ jobs:
           command: docker pull $IMAGE_NAME:dev
       - run:
           name: isort
-          command: docker run --rm --entrypoint="" $APP_NAME:latest "sh" "-c" "isort ."
+          command: docker run --rm --entrypoint="" $APP_NAME:dev "sh" "-c" "isort ."
 
   build_prod:
     docker:
@@ -147,7 +147,7 @@ jobs:
 
 workflows:
   version: 2
-  deployment:
+  cicd:
     jobs:
       - build_dev
 
