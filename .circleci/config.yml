@@ -12,7 +12,9 @@ jobs:
           docker_layer_caching: true
       - run:
           name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml build
+          command: |
+            export DOCKER_BUILDKIT=1
+            docker-compose -f ./docker/docker-compose.test.yml build
       - run:
           name: retag image
           command: docker image tag $APP_NAME:dev $IMAGE_NAME:dev
@@ -119,7 +121,9 @@ jobs:
           docker_layer_caching: true
       - run:
           name: compose build
-          command: docker-compose -f ./docker/docker-compose.test.yml -f ./docker/docker-compose.prod.yml build
+          command: |
+            export DOCKER_BUILDKIT=1
+            docker-compose -f ./docker/docker-compose.test.yml -f ./docker/docker-compose.prod.yml build
       - run:
           name: retag image
           command: docker image tag $APP_NAME:prod $IMAGE_NAME:prod
@@ -150,7 +154,6 @@ jobs:
               echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
               docker pull $IMAGE_NAME:prod
               docker-compose -f docker-compose.yml up -d $APP_NAME
-              docker image prune
             "
 
 workflows:
