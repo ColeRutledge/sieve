@@ -91,6 +91,23 @@ jobs:
           name: isort
           command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "isort ."
 
+  pytest:
+    docker:
+      - image: cimg/base:2021.04
+
+    steps:
+      - setup_remote_docker:
+          version: 20.10.14
+      - run:
+          name: registry login
+          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
+      - run:
+          name: pull image
+          command: docker pull $IMAGE_NAME:dev
+      - run:
+          name: pytest
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "pytest"
+
   build_prod:
     docker:
       - image: cimg/base:2021.04
@@ -158,12 +175,17 @@ workflows:
           requires:
             - build_dev
 
+      - pytest:
+          requires:
+            - build_dev
+
       - build_prod:
           requires:
             - flake8
             - black
             - mypy
             - isort
+            - pytest
           filters:
             branches:
               only:

@@ -19,6 +19,8 @@ rich = "^12.4.4"
 pre-commit = "^2.19.0"
 mypy = "^0.961"
 invoke = "^1.7.1"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -35,7 +37,13 @@ ignore_missing_imports = "true"
 
 [tool.isort]
 profile = "black"
-# number of lines to place between direct and from imports
+# number of lines to place between "import ___" and "from ___ import ___"
 lines_between_types = "1"
 # number of lines to place following all imports
 lines_after_imports = "2"
+
+[tool.pytest.ini_options]
+addopts = "--cov=sieve/ tests/ --cov-report term-missing --no-cov-on-fail --cov-config=pyproject.toml"
+
+[report] # pytest-cov
+exclude_lines = ['if __name__ == "__main__":']

@@ -44,7 +44,8 @@ RUN addgroup --system $NON_ROOT_GROUP \
 
 FROM base as builder
 
-RUN apt-get -y --no-install-recommends install curl build-essential \
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install curl build-essential \
     && apt-get clean
 
 ENV POETRY_VERSION=1.1.14
@@ -64,7 +65,8 @@ FROM base as dev
 ENV ENVIRONMENT="development"
 
 # install git for pre-commit hooks
-RUN apt-get -y --no-install-recommends install git \
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install git \
     && apt-get clean
 
 COPY --from=builder $POETRY_HOME $POETRY_HOME
@@ -76,6 +78,7 @@ RUN poetry install
 WORKDIR $APP_ROOT
 COPY docker docker
 COPY tasks tasks
+COPY tests tests
 COPY sieve sieve
 COPY .flake8 .pre-commit-config.yaml pyproject.toml ./
 
