@@ -76,6 +76,7 @@ RUN poetry install
 WORKDIR $APP_ROOT
 COPY docker docker
 COPY tasks tasks
+COPY tests tests
 COPY sieve sieve
 COPY .flake8 .pre-commit-config.yaml pyproject.toml ./
 
