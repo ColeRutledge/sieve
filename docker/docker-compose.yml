@@ -4,10 +4,9 @@ services:
     image: sieve:dev
     restart: unless-stopped
     env_file: ../.env
+    tty: true
     networks:
       - sieve-network
-    profiles:
-      - primary
     depends_on:
       - "db"
       - "browserless"
@@ -23,11 +22,9 @@ services:
     image: postgres:sieve
     restart: unless-stopped
     env_file: ../.env
+    tty: true
     networks:
       - sieve-network
-    profiles:
-      - primary
-      - support
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.postgres
@@ -39,11 +36,9 @@ services:
     image: browserless/chrome:latest
     restart: unless-stopped
     env_file: ../.env
+    tty: true
     networks:
       - sieve-network
-    profiles:
-      - primary
-      - support
     ports:
       - "3000:3000"
 
