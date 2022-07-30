@@ -15,7 +15,7 @@ monkeypatch.fix_annotations()
 def developer_up(c: Context, all: bool = False) -> None:
     console.print(f"{' DEV STARTUP ':~^75}", style="green")
     project_root = Path().absolute()
-    c.run("docker compose -f ./docker/docker-compose.yml build")
+    c.run("docker compose -f ./docker/docker-compose.yml build sieve db browserless")
     if all:
         c.run("docker-compose -f ./docker/docker-compose.yml --profile primary up -d")
     else:
@@ -32,7 +32,7 @@ def developer_up(c: Context, all: bool = False) -> None:
             f'--mount type=bind,source="{project_root}",target=/sieve '
             "--env-file=.env "
             '--entrypoint="" '
-            "sieve:latest "
+            "sieve:dev "
             '"sh" "-c" "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m sieve.__main__"'
         )
 
