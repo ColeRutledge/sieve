@@ -25,9 +25,13 @@ jobs:
           name: push to registry
           command: docker push $IMAGE_NAME:dev
 
-  flake8:
+  lint_and_test:
     docker:
       - image: cimg/base:2021.04
+
+    parameters:
+      cmd:
+        type: string
 
     steps:
       - setup_remote_docker:
@@ -39,76 +43,8 @@ jobs:
           name: pull image
           command: docker pull $IMAGE_NAME:dev
       - run:
-          name: flake8
-          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "flake8 ."
-
-  black:
-    docker:
-      - image: cimg/base:2021.04
-
-    steps:
-      - setup_remote_docker:
-          version: 20.10.14
-      - run:
-          name: registry login
-          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-      - run:
-          name: pull image
-          command: docker pull $IMAGE_NAME:dev
-      - run:
-          name: black
-          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "black ."
-
-  mypy:
-    docker:
-      - image: cimg/base:2021.04
-
-    steps:
-      - setup_remote_docker:
-          version: 20.10.14
-      - run:
-          name: registry login
-          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-      - run:
-          name: pull image
-          command: docker pull $IMAGE_NAME:dev
-      - run:
-          name: mypy
-          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "mypy --pretty --follow-imports=silent ."
-
-  isort:
-    docker:
-      - image: cimg/base:2021.04
-
-    steps:
-      - setup_remote_docker:
-          version: 20.10.14
-      - run:
-          name: registry login
-          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-      - run:
-          name: pull image
-          command: docker pull $IMAGE_NAME:dev
-      - run:
-          name: isort
-          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "isort ."
-
-  pytest:
-    docker:
-      - image: cimg/base:2021.04
-
-    steps:
-      - setup_remote_docker:
-          version: 20.10.14
-      - run:
-          name: registry login
-          command: echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
-      - run:
-          name: pull image
-          command: docker pull $IMAGE_NAME:dev
-      - run:
-          name: pytest
-          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "pytest"
+          name: run command
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" << parameters.cmd >>
 
   build_prod:
     docker:
@@ -162,29 +98,41 @@ workflows:
     jobs:
       - build_dev
 
-      - flake8:
+      - lint_and_test:
+          name: flake8
+          cmd: "flake8 ."
           requires:
             - build_dev
-
-      - black:
+      - lint_and_test:
+          name: pylint
+          cmd: "pylint --recursive=y ."
           requires:
             - build_dev
-
-      - mypy:
+      - lint_and_test:
+          name: black
+          cmd: "black ."
           requires:
             - build_dev
-
-      - isort:
+      - lint_and_test:
+          name: mypy
+          cmd: "mypy --pretty --follow-imports=silent ."
           requires:
             - build_dev
-
-      - pytest:
+      - lint_and_test:
+          name: isort
+          cmd: "isort ."
+          requires:
+            - build_dev
+      - lint_and_test:
+          name: pytest
+          cmd: "pytest"
           requires:
             - build_dev
 
       - build_prod:
           requires:
             - flake8
+            - pylint
             - black
             - mypy
             - isort
