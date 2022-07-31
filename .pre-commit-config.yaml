@@ -20,6 +20,12 @@ repos:
         language: python # the language of the hook
         entry: poetry run flake8
 
+      - id: pylint
+        name: pylint
+        types: [python]
+        language: python
+        entry: poetry run pylint
+
       - id: black
         name: black
         types: [python]
