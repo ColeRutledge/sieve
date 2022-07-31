@@ -10,9 +10,9 @@ monkeypatch.fix_annotations()
 
 
 @task(aliases=["dev", "up"])
-def developer_up(c: Context, all: bool = False) -> None:
+def developer_up(c: Context, full: bool = False) -> None:
     console.print(f"{' DEV STARTUP ':~^75}", style="green")
-    if all:
+    if full:
         c.run("docker-compose -f ./docker/docker-compose.yml up -d --build")
     else:
         # default -> run with debugpy waiting to connect to debugger
@@ -32,6 +32,12 @@ def developer_down(c: Context) -> None:
     c.run("docker-compose -f ./docker/docker-compose.yml down --remove-orphans")
 
 
+@task(aliases=["build"])
+def developer_build(c: Context) -> None:
+    console.print(f"{' DEV BUILD ':~^75}", style="green")
+    c.run("docker compose -f ./docker/docker-compose.yml build")
+
+
 @task(aliases=["hi"])
 def hooks_install(c: Context) -> None:
     console.print("Installing hooks...", style="bold green")
@@ -46,6 +52,7 @@ def hooks_run(c: Context) -> None:
 
 @task(hooks_install, hooks_run, aliases=["h"])
 def hooks(c: Context) -> None:
+    # pylint: disable=unused-argument
     pass
 
 

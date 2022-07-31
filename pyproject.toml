@@ -21,6 +21,7 @@ mypy = "^0.961"
 invoke = "^1.7.1"
 pytest = "^7.1.2"
 pytest-cov = "^3.0.0"
+pylint = "^2.14.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -47,3 +48,57 @@ addopts = "--cov=sieve/ tests/ --cov-report term-missing --no-cov-on-fail --cov-
 
 [report] # pytest-cov
 exclude_lines = ['if __name__ == "__main__":']
+
+
+[tool.pylint.main]
+ignore = [".venv"]
+ignore-paths = []
+ignore-patterns = []
+ignored-modules = []
+jobs = 0
+suggestion-mode = true
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+]
+
+[tool.pylint.basic]
+good-names = ["exc"]
+# allow valid one and two character variables
+good-names-rgxs = "^[_a-z][_a-z0-9]?$"
+# inlinevar-naming-style = "any"
+
+[tool.pylint.classes]
+check-protected-access-in-special-methods = true
+
+[tool.pylint.design]
+# max-args =
+# max-attributes =
+# max-bool-expr =
+
+[tool.pylint.format]
+single-line-class-stmt = true
+single-line-if-stmt = true
+expected-line-ending-format = "LF"
+# ignore-long-lines = "^\\s*(# )?<?https?://\\S+>?$"
+# max-line-length = 100
+# max-module-lines = 1000
+
+[tool.pylint."messages control"]
+
+[tool.pylint.miscellaneous]
+notes = ["NOTE", "TODO"]
+
+[tool.pylint.similarities]
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+min-similarity-lines = 4
+
+[tool.pylint.typecheck]
+missing-member-hint = true
+
+[tool.pylint.variables]
+allow-global-unused-variables = true
+# ignored-argument-names = "_.*|^ignored_|^unused_"
