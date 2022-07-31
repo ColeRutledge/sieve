@@ -44,7 +44,7 @@ jobs:
           command: docker pull $IMAGE_NAME:dev
       - run:
           name: run command
-          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" << parameters.cmd >>
+          command: docker run --rm --entrypoint="" $IMAGE_NAME:dev "sh" "-c" "<< parameters.cmd >>"
 
   build_prod:
     docker:
