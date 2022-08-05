@@ -115,7 +115,7 @@ workflows:
             - build_dev
       - lint_and_test:
           name: mypy
-          cmd: "mypy --pretty --follow-imports=silent ."
+          cmd: "mypy ."
           requires:
             - build_dev
       - lint_and_test:
