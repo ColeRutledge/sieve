@@ -16,6 +16,8 @@ services:
       target: dev
     volumes:
       - "..:/sieve"
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "sieve"}]'
 
   db:
     container_name: postgres_db
@@ -41,6 +43,19 @@ services:
       - sieve-network
     ports:
       - "3000:3000"
+
+  datadog:
+    container_name: datadog
+    image: gcr.io/datadoghq/agent:7
+    restart: unless-stopped
+    env_file: ../.env
+    tty: true
+    networks:
+      - sieve-network
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/proc/:/host/proc/:ro"
+      - "/sys/fs/cgroup/:/host/sys/fs/cgroup:ro"
 
 volumes:
   postgres-db:
