@@ -84,6 +84,8 @@ jobs:
               export DB_USER=$DB_USER
               export DB_HOST=$DB_HOST
               export DB_PASS=$DB_PASS
+              export DD_SITE=$DD_SITE
+              export DD_API_KEY=$DD_API_KEY
               export LINKEDIN_EMAIL=$LINKEDIN_EMAIL
               export LINKEDIN_PASS=$LINKEDIN_PASS
               export POSTGRES_PASSWORD=$POSTGRES_PASSWORD

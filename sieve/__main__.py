@@ -6,7 +6,7 @@ logger = get_logger(__name__)
 
 def main():
     try:
-        logger.debug("MESSAGE")
+        logger.info("MESSAGE")
 
     finally:
         if DATADOG_LOG_CLIENT:
