@@ -106,6 +106,9 @@ class JsonFormatter(logging.Formatter):
             record.exc_text = self.formatException(record.exc_info)
         if record.exc_text:
             payload["traceback"] = record.exc_text
+            if isinstance(record.exc_info, tuple):
+                payload["exception_message"] = str(record.exc_info[1])
+                payload["exception_type"] = getattr(record.exc_info[0], "__name__", None)
         if record.stack_info:
             payload["stack_info"] = self.formatStack(record.stack_info)
 

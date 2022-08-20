@@ -159,4 +159,6 @@ def test_json_formatter_parses_exception_payload_correctly():
         "level": "ERROR",
         "message": "ERROR",
         "function_name": "test_json_formatter_parses_exception_payload_correctly",
+        "exception_message": "BAD VALUE",
+        "exception_type": "ValueError",
     }
