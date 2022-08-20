@@ -25,7 +25,7 @@ def test_dev_config(set_dev_config):
     env_vars = {k: v for k, v in vars(config).items() if k.isupper()}
     assert env_vars == {
         "ENVIRONMENT": "development",
-        "HOSTNAME": "localhost",
+        "HOSTNAME": "dev_host",
         "IS_TESTING": False,
         "LOG_LEVEL": logging.DEBUG,
         "LINKEDIN_EMAIL": "dev_user",

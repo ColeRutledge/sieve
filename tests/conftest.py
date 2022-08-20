@@ -17,6 +17,7 @@ def set_test_config(monkeypatch: MonkeyPatch):
 @fixture(scope="function")
 def set_dev_config(monkeypatch: MonkeyPatch):
     monkeypatch.setenv("ENVIRONMENT", "development")
+    monkeypatch.setenv("HOSTNAME", "dev_host")
     monkeypatch.setenv("LOG_LEVEL", "DEBUG")
     monkeypatch.setenv("LINKEDIN_EMAIL", "dev_user")
     monkeypatch.setenv("LINKEDIN_PASS", "dev_pass")
