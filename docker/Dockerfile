@@ -10,6 +10,7 @@ ENV APP_ROOT="/sieve" \
     ENTRYPOINT_PATH="/sieve/docker/entry.sh" \
     CRONTAB="run_sieve" \
     CRONTAB_PATH="/var/spool/cron/crontabs/run_sieve" \
+    CRONTAB_ENVIRONMENT="/etc/environment" \
     CRONTABS_BASE="/var/spool/cron/crontabs/" \
     \
     PYTHONUNBUFFERED=1 \
@@ -62,7 +63,8 @@ RUN poetry install --no-dev
 
 FROM base as dev
 
-ENV ENVIRONMENT="development"
+ENV ENVIRONMENT="development" \
+    LOG_LEVEL="DEBUG"
 
 # install git for pre-commit hooks
 RUN apt-get update \
@@ -84,7 +86,7 @@ COPY .flake8 .pre-commit-config.yaml pyproject.toml ./
 
 # copy crontab and set non-root permissions
 COPY docker/${CRONTAB} $CRONTABS_BASE
-RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $CRONTABS_BASE \
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $CRONTABS_BASE $CRONTAB_ENVIRONMENT \
     && chmod +x $CRONTAB_PATH \
     && crontab -u $NON_ROOT_USER $CRONTAB_PATH
 
@@ -102,7 +104,8 @@ ENTRYPOINT [ "/sieve/docker/entry.sh" ]
 
 FROM base as prod
 
-ENV ENVIRONMENT="production"
+ENV ENVIRONMENT="production" \
+    LOG_LEVEL="INFO"
 
 COPY --from=builder $VENV_PATH $VENV_PATH
 
@@ -112,7 +115,7 @@ COPY sieve sieve
 
 # copy crontab and set non-root permissions
 COPY docker/${CRONTAB} $CRONTABS_BASE
-RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $CRONTABS_BASE \
+RUN chown -R $NON_ROOT_USER:$NON_ROOT_GROUP $CRONTABS_BASE $CRONTAB_ENVIRONMENT \
     && chmod +x $CRONTAB_PATH \
     && crontab -u $NON_ROOT_USER $CRONTAB_PATH
 

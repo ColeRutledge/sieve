@@ -6,4 +6,8 @@
 # details.
 set -euo pipefail
 
+# cron runs from a non-interactive, non-login shell, so we inject
+# env variables for cron here. https://stackoverflow.com/a/41938139
+printenv > /etc/environment
+
 cron -f

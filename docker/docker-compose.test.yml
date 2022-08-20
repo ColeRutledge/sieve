@@ -13,12 +13,13 @@ services:
     volumes:
       - "/dev/shm:/dev/shm"
     environment:
-      EMAIL: ${EMAIL}
-      EPASS: ${EPASS}
+      LINKEDIN_EMAIL: ${LINKEDIN_EMAIL}
+      LINKEDIN_PASS: ${LINKEDIN_PASS}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_HOST: ${DB_HOST}
+      ENVIRONMENT: testing
 
   db:
     container_name: postgres_db
