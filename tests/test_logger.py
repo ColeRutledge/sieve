@@ -122,7 +122,7 @@ def test_json_formatter_parses_debug_payload_correctly():
     formatted_record = json.loads(formatter.format(record))
     formatted_record.pop("timestamp")
     assert formatted_record == {
-        "logger": "tests.test_logger",
+        "logger": {"name": "tests.test_logger", "thread_name": "MainThread"},
         "level": "DEBUG",
         "message": "MESSAGE",
         "function_name": "test_json_formatter_parses_debug_payload_correctly",
@@ -152,10 +152,10 @@ def test_json_formatter_parses_exception_payload_correctly():
     )
     formatted_record = json.loads(formatter.format(record))
     formatted_record.pop("timestamp")
-    exc_info = formatted_record.pop("exc_info")
-    assert 'raise ValueError("BAD VALUE")\nValueError: BAD VALUE' in exc_info
+    traceback = formatted_record.pop("traceback")
+    assert 'raise ValueError("BAD VALUE")\nValueError: BAD VALUE' in traceback
     assert formatted_record == {
-        "logger": "tests.test_logger",
+        "logger": {"name": "tests.test_logger", "thread_name": "MainThread"},
         "level": "ERROR",
         "message": "ERROR",
         "function_name": "test_json_formatter_parses_exception_payload_correctly",

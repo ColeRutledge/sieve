@@ -93,7 +93,7 @@ class JsonFormatter(logging.Formatter):
         """Format `logging.LogRecord` into Datadog compatible payload"""
 
         payload: dict[str, Any] = {
-            "logger": record.name,
+            "logger": {"name": record.name, "thread_name": record.threadName},
             "level": record.levelname,
             "message": record.getMessage(),
             "function_name": record.funcName,
@@ -105,7 +105,7 @@ class JsonFormatter(logging.Formatter):
             # cache the converted traceback in the exc_text attribute for other handlers
             record.exc_text = self.formatException(record.exc_info)
         if record.exc_text:
-            payload["exc_info"] = record.exc_text
+            payload["traceback"] = record.exc_text
         if record.stack_info:
             payload["stack_info"] = self.formatStack(record.stack_info)
 
