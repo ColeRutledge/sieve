@@ -84,8 +84,8 @@ jobs:
               export DB_USER=$DB_USER
               export DB_HOST=$DB_HOST
               export DB_PASS=$DB_PASS
-              export EMAIL=$EMAIL
-              export EPASS=$EPASS
+              export LINKEDIN_EMAIL=$LINKEDIN_EMAIL
+              export LINKEDIN_PASS=$LINKEDIN_PASS
               export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
               echo $CR_PAT | docker login $REGISTRY -u $CR_USERNAME --password-stdin
               docker pull $IMAGE_NAME:prod
@@ -115,7 +115,7 @@ workflows:
             - build_dev
       - lint_and_test:
           name: mypy
-          cmd: "mypy --pretty --follow-imports=silent ."
+          cmd: "mypy ."
           requires:
             - build_dev
       - lint_and_test:

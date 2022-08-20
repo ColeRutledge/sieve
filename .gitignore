@@ -1,7 +1,8 @@
-.venv
+logs/
+.venv/
+.vscode/
+.mypy_cache/
 .env
-.vscode
-.mypy_cache
 sieve.md
 
 # Byte-compiled / optimized / DLL files

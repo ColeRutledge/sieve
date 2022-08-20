@@ -37,7 +37,7 @@ repos:
         types: [python]
         language: python
         entry: poetry run mypy
-        args: ["--pretty", "--follow-imports=silent"]
+        args: ["--pretty"]
 
       - id: isort
         name: isort

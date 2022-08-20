@@ -2,11 +2,7 @@ import io
 
 from invoke import Context, task
 
-from tasks import monkeypatch
 from tasks.console import Text, console
-
-
-monkeypatch.fix_annotations()
 
 
 @task(aliases=["dev", "up"])
