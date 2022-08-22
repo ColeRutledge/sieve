@@ -17,6 +17,17 @@ from datadog_api_client.v2.model.http_log_item import HTTPLogItem
 from sieve import config
 
 
+os.makedirs("logs", exist_ok=True)
+
+# set root logger level
+logging.getLogger().setLevel(config.LOG_LEVEL)
+
+# configure datadog api client
+DATADOG_LOG_CLIENT = None
+if all([not config.IS_TESTING, config.DD_API_KEY, config.DD_SITE]):
+    DATADOG_LOG_CLIENT = _ThreadedApiClient(Configuration())
+
+
 COLOR = SimpleNamespace(
     HEADER="\033[95m",
     OKBLUE="\033[94m",
@@ -44,8 +55,8 @@ class DatadogHandler(logging.StreamHandler):
     def emit(self, record: logging.LogRecord) -> None:
         if not DATADOG_LOG_CLIENT:
             raise ValueError("ThreadedApiClient cannot be None")
-        api_instance = LogsApi(DATADOG_LOG_CLIENT)
-        api_instance.submit_log(
+        api = LogsApi(DATADOG_LOG_CLIENT)
+        api.submit_log(
             body=HTTPLog(
                 [
                     HTTPLogItem(
@@ -61,7 +72,7 @@ class DatadogHandler(logging.StreamHandler):
 
 
 class JsonFormatter(logging.Formatter):
-    RESERVED_ATTRIBUTES: set[str] = {
+    _RESERVED_ATTRIBUTES: set[str] = {
         "name",
         "msg",
         "message",
@@ -102,7 +113,7 @@ class JsonFormatter(logging.Formatter):
 
         # exception details
         if record.exc_info and not record.exc_text:
-            # cache the converted traceback in the exc_text attribute for other handlers
+            # cache converted traceback in exc_text attribute for other handlers to use
             record.exc_text = self.formatException(record.exc_info)
         if record.exc_text:
             payload["traceback"] = record.exc_text
@@ -113,7 +124,7 @@ class JsonFormatter(logging.Formatter):
             payload["stack_info"] = self.formatStack(record.stack_info)
 
         # extras
-        for extra in record.__dict__.keys() - JsonFormatter.RESERVED_ATTRIBUTES:
+        for extra in record.__dict__.keys() - JsonFormatter._RESERVED_ATTRIBUTES:
             payload[extra] = getattr(record, extra)
 
         return json.dumps(payload)
@@ -166,18 +177,18 @@ class RotatingFileHandler(_RotatingFileHandler):
         )
 
 
-def get_logger(name: str) -> logging.Logger:
+def get_logger(name: str, level: str | None = None) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.handlers.clear()
-    logger.setLevel(config.LOG_LEVEL)
+    logger.setLevel(level or config.LOG_LEVEL)
     logger.addHandler(StreamHandler())
 
     # datadog config
-    if config.ENVIRONMENT != "testing":
-        if config.DD_API_KEY and config.DD_SITE:
-            logger.addHandler(DatadogHandler())
-            return logger
+    if all([not config.IS_TESTING, config.DD_API_KEY, config.DD_SITE]):
+        logger.addHandler(DatadogHandler())
+        return logger
 
+    if not config.IS_TESTING:
         logger.warning(
             "%s* * * DD_API_KEY & DD_SITE required -> using default handler * * *%s",
             COLOR.WARNING,
@@ -186,17 +197,3 @@ def get_logger(name: str) -> logging.Logger:
 
     logger.addHandler(RotatingFileHandler())
     return logger
-
-
-# make logs dir
-os.makedirs("logs", exist_ok=True)
-
-# set root logger level
-logging.getLogger().setLevel(config.LOG_LEVEL)
-
-# configure datadog api client
-DATADOG_LOG_CLIENT = None
-if config.ENVIRONMENT != "testing":
-    if config.DD_API_KEY and config.DD_SITE:
-        configuration = Configuration()
-        DATADOG_LOG_CLIENT = _ThreadedApiClient(configuration)
