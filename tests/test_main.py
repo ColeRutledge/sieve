@@ -5,7 +5,7 @@ from pytest import LogCaptureFixture, MonkeyPatch
 from sieve.__main__ import main
 
 
-def test_main(caplog: LogCaptureFixture, monkeypatch: MonkeyPatch):
+def test_main(caplog: LogCaptureFixture, monkeypatch: MonkeyPatch, enable_logging):
     class MockDatadogLogClient:
         def close(self):
             pass

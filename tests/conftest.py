@@ -1,3 +1,5 @@
+import logging
+
 from importlib import reload
 
 from pytest import MonkeyPatch, fixture
@@ -27,6 +29,8 @@ def set_dev_config(monkeypatch: MonkeyPatch):
     monkeypatch.setenv("DB_HOST", "localhost")
     monkeypatch.setenv("DD_SITE", "dev.datadog.site")
     monkeypatch.setenv("DD_API_KEY", "dev_api_key")
+    monkeypatch.setenv("DRIVER_WIDTH", "1200")
+    monkeypatch.setenv("DRIVER_HEIGHT", "800")
     reload(config)
     yield
     monkeypatch.setenv("ENVIRONMENT", "testing")
@@ -46,7 +50,16 @@ def set_prod_config(monkeypatch: MonkeyPatch):
     monkeypatch.setenv("DB_HOST", "remote_host")
     monkeypatch.setenv("DD_SITE", "prod.datadog.site")
     monkeypatch.setenv("DD_API_KEY", "prod_api_key")
+    monkeypatch.setenv("DRIVER_WIDTH", "1200")
+    monkeypatch.setenv("DRIVER_HEIGHT", "800")
     reload(config)
     yield
     monkeypatch.setenv("ENVIRONMENT", "testing")
     reload(config)
+
+
+@fixture(scope="function")
+def enable_logging():
+    logging.disable(logging.NOTSET)
+    yield
+    logging.disable(logging.CRITICAL)

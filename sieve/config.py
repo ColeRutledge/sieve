@@ -8,6 +8,9 @@ import os
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT") or "testing"
 IS_TESTING = ENVIRONMENT == "testing"
+IS_DEV = ENVIRONMENT == "development"
+IS_PROD = ENVIRONMENT == "production"
+
 
 if not IS_TESTING:
     LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL") or "DEBUG")
@@ -28,6 +31,10 @@ if not IS_TESTING:
     # datadog
     DD_SITE = os.environ.get("DD_SITE")
     DD_API_KEY = os.environ.get("DD_API_KEY")
+
+    # browserless
+    DRIVER_WIDTH = int(os.environ.get("DRIVER_WIDTH", 1200))
+    DRIVER_HEIGHT = int(os.environ.get("DRIVER_HEIGHT", 800))
 
 else:
     LOG_LEVEL = logging.DEBUG

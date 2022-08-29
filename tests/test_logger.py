@@ -46,6 +46,7 @@ def test_get_logger_returns_expected_logging_config_for_prod(
 def test_datadog_handler_raises_exception_with_invalid_datadog_client(
     monkeypatch: MonkeyPatch,
     set_dev_config,
+    enable_logging,
 ):
     monkeypatch.setattr("sieve.logger.DATADOG_LOG_CLIENT", None)
 
@@ -61,6 +62,7 @@ def test_datadog_and_stream_handlers_log_output(
     monkeypatch: MonkeyPatch,
     caplog: LogCaptureFixture,
     set_dev_config,
+    enable_logging,
 ):
     class MockLogsApi:
         def __init__(self, api_client):
@@ -92,6 +94,7 @@ def test_datadog_env_var_warning(
     monkeypatch: MonkeyPatch,
     caplog: LogCaptureFixture,
     set_dev_config,
+    enable_logging,
 ):
     monkeypatch.setattr("sieve.logger.config.DD_API_KEY", None)
     monkeypatch.setattr("sieve.logger.config.DD_SITE", None)
