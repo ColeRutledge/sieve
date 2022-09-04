@@ -9,6 +9,7 @@ from datadog_api_client.v2.model.http_log import HTTPLog
 from pytest import LogCaptureFixture, MonkeyPatch, raises
 
 from sieve import logger as logger_
+from sieve.exceptions import SystemException
 from sieve.logger import (
     DatadogHandler,
     JsonFormatter,
@@ -80,8 +81,8 @@ def test_datadog_and_stream_handlers_log_output(
     logger.debug("MESSAGE", extra={"extra_attribute": True})
 
     try:
-        raise Exception("ERROR")
-    except Exception:
+        raise SystemException("ERROR")
+    except SystemException:
         logger.exception("EXCEPTION", stack_info=True)
 
     assert "MESSAGE" in caplog.text
@@ -135,8 +136,8 @@ def test_json_formatter_parses_debug_payload_correctly():
 def test_json_formatter_parses_exception_payload_correctly():
     exception_info = None
     try:
-        raise ValueError("BAD VALUE")
-    except ValueError:
+        raise SystemException("BAD VALUE")
+    except SystemException:
         exception_info = sys.exc_info()
 
     formatter = JsonFormatter()
@@ -156,12 +157,12 @@ def test_json_formatter_parses_exception_payload_correctly():
     formatted_record = json.loads(formatter.format(record))
     formatted_record.pop("timestamp")
     traceback = formatted_record.pop("traceback")
-    assert 'raise ValueError("BAD VALUE")\nValueError: BAD VALUE' in traceback
+    assert 'SystemException("BAD VALUE")\nsieve.exceptions.SystemException: BAD VALUE' in traceback
     assert formatted_record == {
         "logger": {"name": "tests.test_logger", "thread_name": "MainThread"},
         "level": "ERROR",
         "message": "ERROR",
         "function_name": "test_json_formatter_parses_exception_payload_correctly",
         "exception_message": "BAD VALUE",
-        "exception_type": "ValueError",
+        "exception_type": "SystemException",
     }

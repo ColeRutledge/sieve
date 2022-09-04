@@ -73,7 +73,8 @@ addopts = "--cov=sieve/ tests/ --cov-report term-missing --no-cov-on-fail --cov-
 #####################################
 
 [report]
-exclude_lines = ['if __name__ == "__main__":']
+omit = ["sieve/__main__.py"]
+exclude_lines = []
 
 #####################################
 #              PYLINT               #
