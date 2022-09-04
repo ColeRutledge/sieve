@@ -1,6 +1,7 @@
 import time
 
 from datetime import datetime, timedelta
+from typing import Protocol
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ChromeOptions, Remote
@@ -14,14 +15,70 @@ from sieve.logger import get_logger
 logger = get_logger(__name__)
 
 
-class Driver(Remote):
+class ElementProtocol(Protocol):
+    @property
+    def text(self) -> str:
+        ...
+
+    def screenshot(self, filename: str) -> bool:
+        ...
+
+
+class Element(ElementProtocol):
+    def __init__(self, element: WebElement):
+        self._element = element
+
+    @property
+    def text(self) -> str:
+        return self._element.text
+
+    def screenshot(self, filename: str) -> bool:
+        return self._element.screenshot(filename)
+
+
+class DriverProtocol(Protocol):
+    def get(self, url: str) -> None:
+        ...
+
+    def element(self, xpath: str) -> ElementProtocol:
+        ...
+
+    def save_screenshot(self, filename: str) -> bool:
+        ...
+
+    def quit(self) -> None:
+        ...
+
+
+class Driver(DriverProtocol):
     POLL_INTERVAL = 1
     WAIT_TIME_SECONDS = 5
 
-    def xpath(self, xpath: str) -> WebElement:
+    DRIVER_BASE_CONFIG = {
+        "headless": "--headless",
+        "no_sandbox": "--no-sandbox",
+        "log_level": "--log-level=3",
+        "window_size": "--window-size=1920,12000",
+        "dev_shm": "--disable-dev-shm-usage",
+    }
+
+    def __init__(self, driver: Remote):
+        self._driver = driver
+
+    @property
+    def driver(self) -> Remote:
+        return self._driver
+
+    def get(self, url: str) -> None:
+        """Make an HTTP GET request"""
+        logger.info("[driver] GET: %s", url)
+        self.driver.get(url=url)
+
+    def element(self, xpath: str) -> Element:
+        """Will return the first located `Element` that matches the `xpath`"""
         timeout = datetime.now() + timedelta(seconds=self.WAIT_TIME_SECONDS)
         while datetime.now() < timeout:
-            elements = self.find_elements(by=By.XPATH, value=xpath)
+            elements = self._find_elements(xpath)
             if elements:
                 return elements[0]
             time.sleep(self.POLL_INTERVAL)
@@ -29,54 +86,50 @@ class Driver(Remote):
         self.save_screenshot("ss.png")
         raise NoSuchElementException(f"No elements found: {xpath}")
 
-    def get(self, url: str) -> None:
-        logger.info("Driver request: %s", url)
-        super().get(url)
-
     def save_screenshot(self, filename: str) -> bool:
-        w, h = self.get_window_size().values()
-        _w = self.execute_script("return document.body.offsetWidth")
-        _h = self.execute_script("return document.body.offsetHeight")
-        self.set_window_size(_w, min(_h, 12000))
+        """Save a PNG screenshot of the browser viewport at max resolution"""
+        w, h = self.driver.get_window_size().values()
+        body_w = self.driver.execute_script("return document.body.offsetWidth")
+        body_h = self.driver.execute_script("return document.body.offsetHeight")
+        self.driver.set_window_size(body_w, min(body_h, 12000))
         try:
-            self.xpath("//body").screenshot(filename)
+            self.element("//body").screenshot(filename)
             return True
         except Exception:
             logger.exception("Error saving screenshot")
             return False
         finally:
-            self.set_window_size(w, h)
+            self.driver.set_window_size(w, h)
 
+    def quit(self) -> None:
+        """Handle cleanup before closing"""
+        self.driver.quit()
 
-DRIVER_BASE_CONFIG = {
-    "headless": "--headless",
-    "no_sandbox": "--no-sandbox",
-    "log_level": "--log-level=3",
-    "window_size": "--window-size=1920,12000",
-    "dev_shm": "--disable-dev-shm-usage",
-}
+    def _find_elements(self, xpath: str) -> list[Element]:
+        elements = self.driver.find_elements(by=By.XPATH, value=xpath)
+        return [Element(e) for e in elements]
 
 
 def init_driver(option_overrides: dict | None = None) -> Driver:
     # pylint: disable = expression-not-assigned
 
-    options = DRIVER_BASE_CONFIG | (option_overrides or {})
+    options = Driver.DRIVER_BASE_CONFIG | (option_overrides or {})
     chrome_options = ChromeOptions()
     [chrome_options.add_argument(arg) for arg in options.values() if arg]
 
     if config.IS_DEV:
-        logger.info("[development] creating driver")
-        driver = Driver(
+        logger.info("[driver] dev driver connecting")
+        driver = Remote(
             command_executor="http://localhost:3000/webdriver",
             options=chrome_options,
         )
 
     else:
-        logger.info("[production] creating driver")
-        driver = Driver(
+        logger.info("[driver] prod driver connecting")
+        driver = Remote(
             command_executor="http://browserless:3000/webdriver",
             options=chrome_options,
         )
 
     driver.set_window_size(config.DRIVER_WIDTH, config.DRIVER_HEIGHT)
-    return driver
+    return Driver(driver)

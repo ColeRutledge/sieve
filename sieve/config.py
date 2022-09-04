@@ -53,3 +53,7 @@ else:
     # datadog
     DD_SITE = "test.datadog.site"
     DD_API_KEY = "test_api_key"
+
+    # browserless
+    DRIVER_WIDTH = 1200
+    DRIVER_HEIGHT = 800
