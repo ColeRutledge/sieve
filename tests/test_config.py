@@ -20,6 +20,8 @@ def test_test_config(set_test_config):
         "DB_HOST": "localhost",
         "DD_SITE": "test.datadog.site",
         "DD_API_KEY": "test_api_key",
+        "DRIVER_HEIGHT": 800,
+        "DRIVER_WIDTH": 1200,
     }
 
 
