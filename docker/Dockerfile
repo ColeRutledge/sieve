@@ -4,7 +4,8 @@
 
 FROM python:3.10-slim as base
 
-ENV APP_ROOT="/sieve" \
+ENV APP_NAME="sieve" \
+    APP_ROOT="/sieve" \
     NON_ROOT_USER="sieve_user" \
     NON_ROOT_GROUP="sieve_group" \
     ENTRYPOINT_PATH="/sieve/docker/entry.sh" \
@@ -49,8 +50,8 @@ RUN apt-get update \
     && apt-get -y --no-install-recommends install curl build-essential \
     && apt-get clean
 
-ENV POETRY_VERSION=1.1.14
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+ENV POETRY_VERSION=1.2.0
+RUN curl -sSL https://install.python-poetry.org | python -
 
 WORKDIR $PYSETUP_PATH
 COPY ./pyproject.toml ./poetry.lock ./
@@ -63,7 +64,7 @@ RUN poetry install --no-dev
 
 FROM base as dev
 
-ENV ENVIRONMENT="development" \
+ENV APP_ENV="dev" \
     LOG_LEVEL="DEBUG"
 
 # install git for pre-commit hooks
@@ -104,7 +105,7 @@ ENTRYPOINT [ "/sieve/docker/entry.sh" ]
 
 FROM base as prod
 
-ENV ENVIRONMENT="production" \
+ENV APP_ENV="prod" \
     LOG_LEVEL="INFO"
 
 COPY --from=builder $VENV_PATH $VENV_PATH

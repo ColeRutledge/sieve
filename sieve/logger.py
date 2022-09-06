@@ -8,63 +8,44 @@ from logging.handlers import RotatingFileHandler as _RotatingFileHandler
 from types import SimpleNamespace
 from typing import Any
 
-from datadog_api_client import Configuration
-from datadog_api_client import ThreadedApiClient as _ThreadedApiClient
+from datadog_api_client import Configuration, ThreadedApiClient
 from datadog_api_client.v2.api.logs_api import LogsApi
 from datadog_api_client.v2.model.http_log import HTTPLog
 from datadog_api_client.v2.model.http_log_item import HTTPLogItem
 
-from sieve import config
+from sieve.settings import settings
 
-
-os.makedirs("logs", exist_ok=True)
 
 # set root logger level
-logging.getLogger().setLevel(config.LOG_LEVEL)
+logging.getLogger().setLevel(settings.log_level)
+
 
 # configure datadog api client
-DATADOG_LOG_CLIENT = None
-if all([not config.IS_TESTING, config.DD_API_KEY, config.DD_SITE]):
-    DATADOG_LOG_CLIENT = _ThreadedApiClient(Configuration())
-
-
-COLOR = SimpleNamespace(
-    HEADER="\033[95m",
-    OKBLUE="\033[94m",
-    OKCYAN="\033[96m",
-    OKGREEN="\033[92m",
-    WARNING="\033[93m",
-    FAIL="\033[91m",
-    END="\033[0m",
-    BOLD="\033[1m",
-    UNDERLINE="\033[4m",
-    PURPLE="\033[35m",
-    WHITE="\033[1;37m",
-)
-
-
-def add_color(message: str, color):
-    return f"{color}{message}{COLOR.END}"
+DATADOG_CLIENT = None
 
 
 class DatadogHandler(logging.StreamHandler):
+    # pylint: disable = global-statement
+
     def __init__(self, *args, **kwargs):
+        global DATADOG_CLIENT
+        if all([not DATADOG_CLIENT, not settings.is_test, settings.dd_api_key, settings.dd_site]):
+            DATADOG_CLIENT = ThreadedApiClient(Configuration())
+        assert DATADOG_CLIENT, "INVALID DATADOG_CLIENT"
         super().__init__(*args, **kwargs)
         self.setFormatter(JsonFormatter())
 
     def emit(self, record: logging.LogRecord) -> None:
-        if not DATADOG_LOG_CLIENT:
-            raise ValueError("ThreadedApiClient cannot be None")
-        api = LogsApi(DATADOG_LOG_CLIENT)
+        api = LogsApi(DATADOG_CLIENT)
         api.submit_log(
             body=HTTPLog(
                 [
                     HTTPLogItem(
                         message=self.format(record),
-                        hostname=config.HOSTNAME,
-                        service="sieve",
+                        hostname=settings.hostname,
+                        service=settings.app_name,
                         ddsource="python",
-                        ddtags=f"env:{config.ENVIRONMENT}",
+                        ddtags=f"env:{settings.app_env}",
                     ),
                 ]
             )
@@ -177,23 +158,43 @@ class RotatingFileHandler(_RotatingFileHandler):
         )
 
 
+COLOR = SimpleNamespace(
+    HEADER="\033[95m",
+    OKBLUE="\033[94m",
+    OKCYAN="\033[96m",
+    OKGREEN="\033[92m",
+    WARNING="\033[93m",
+    FAIL="\033[91m",
+    END="\033[0m",
+    BOLD="\033[1m",
+    UNDERLINE="\033[4m",
+    PURPLE="\033[35m",
+    WHITE="\033[1;37m",
+)
+
+
+def add_color(message: str, color):
+    return f"{color}{message}{COLOR.END}"
+
+
 def get_logger(name: str, level: str | None = None) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.handlers.clear()
-    logger.setLevel(level or config.LOG_LEVEL)
+    logger.setLevel(level or settings.log_level)
     logger.addHandler(StreamHandler())
 
     # datadog config
-    if all([not config.IS_TESTING, config.DD_API_KEY, config.DD_SITE]):
+    if all([not settings.is_test, settings.dd_api_key, settings.dd_site]):
         logger.addHandler(DatadogHandler())
         return logger
 
-    if not config.IS_TESTING:
+    if not settings.is_test:
         logger.warning(
-            "%s* * * DD_API_KEY & DD_SITE required -> using default handler * * *%s",
+            "%s* * * DD_API_KEY & DD_SITE REQUIRED -> using default handler * * *%s",
             COLOR.WARNING,
             COLOR.END,
         )
 
+    os.makedirs("logs", exist_ok=True)
     logger.addHandler(RotatingFileHandler())
     return logger

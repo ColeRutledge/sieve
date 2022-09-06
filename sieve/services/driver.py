@@ -8,8 +8,8 @@ from selenium.webdriver import ChromeOptions, Remote
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from sieve import config
 from sieve.logger import get_logger
+from sieve.settings import settings
 
 
 logger = get_logger(__name__)
@@ -117,7 +117,7 @@ def init_driver(option_overrides: dict | None = None) -> Driver:
     chrome_options = ChromeOptions()
     [chrome_options.add_argument(arg) for arg in options.values() if arg]
 
-    if config.IS_DEV:
+    if settings.is_dev:
         logger.info("[driver] dev driver connecting")
         driver = Remote(
             command_executor="http://localhost:3000/webdriver",
@@ -131,5 +131,5 @@ def init_driver(option_overrides: dict | None = None) -> Driver:
             options=chrome_options,
         )
 
-    driver.set_window_size(config.DRIVER_WIDTH, config.DRIVER_HEIGHT)
+    driver.set_window_size(settings.driver_width, settings.driver_height)
     return Driver(driver)

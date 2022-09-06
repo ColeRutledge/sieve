@@ -2,13 +2,9 @@ import json
 import logging
 import sys
 
-from importlib import reload
-
-from datadog_api_client import ThreadedApiClient
 from datadog_api_client.v2.model.http_log import HTTPLog
-from pytest import LogCaptureFixture, MonkeyPatch, raises
+from pytest import LogCaptureFixture, MonkeyPatch
 
-from sieve import logger as logger_
 from sieve.exceptions import SystemException
 from sieve.logger import (
     DatadogHandler,
@@ -19,7 +15,11 @@ from sieve.logger import (
 )
 
 
-def test_get_logger_returns_expected_logging_config_for_testing(set_test_config):
+def test_get_logger_returns_expected_logging_config_for_testing(
+    monkeypatch: MonkeyPatch,
+    test_settings,
+):
+    monkeypatch.setattr("sieve.logger.settings", test_settings)
     logger = get_logger(__name__)
 
     for handler in logger.handlers:
@@ -32,8 +32,9 @@ def test_get_logger_returns_expected_logging_config_for_testing(set_test_config)
 
 def test_get_logger_returns_expected_logging_config_for_prod(
     monkeypatch: MonkeyPatch,
-    set_prod_config,
+    prod_settings,
 ):
+    monkeypatch.setattr("sieve.logger.settings", prod_settings)
     logger = get_logger(__name__)
 
     for handler in logger.handlers:
@@ -44,25 +45,10 @@ def test_get_logger_returns_expected_logging_config_for_prod(
     assert logger.name == "tests.test_logger"
 
 
-def test_datadog_handler_raises_exception_with_invalid_datadog_client(
-    monkeypatch: MonkeyPatch,
-    set_dev_config,
-    enable_logging,
-):
-    monkeypatch.setattr("sieve.logger.DATADOG_LOG_CLIENT", None)
-
-    logger = get_logger(__name__)
-
-    with raises(ValueError) as exc:
-        logger.info("MESSAGE")
-
-    assert "ThreadedApiClient cannot be None" == str(exc.value)
-
-
 def test_datadog_and_stream_handlers_log_output(
     monkeypatch: MonkeyPatch,
     caplog: LogCaptureFixture,
-    set_dev_config,
+    dev_settings,
     enable_logging,
 ):
     class MockLogsApi:
@@ -75,7 +61,8 @@ def test_datadog_and_stream_handlers_log_output(
             assert isinstance(body, HTTPLog)
 
     monkeypatch.setattr("sieve.logger.LogsApi", MockLogsApi)
-    monkeypatch.setattr("sieve.logger.DATADOG_LOG_CLIENT", "good_client")
+    monkeypatch.setattr("sieve.logger.settings", dev_settings)
+    monkeypatch.setattr("sieve.logger.DATADOG_CLIENT", "good_client")
 
     logger = get_logger(__name__)
     logger.debug("MESSAGE", extra={"extra_attribute": True})
@@ -94,18 +81,14 @@ def test_datadog_and_stream_handlers_log_output(
 def test_datadog_env_var_warning(
     monkeypatch: MonkeyPatch,
     caplog: LogCaptureFixture,
-    set_dev_config,
+    dev_settings,
     enable_logging,
 ):
-    monkeypatch.setattr("sieve.logger.config.DD_API_KEY", None)
-    monkeypatch.setattr("sieve.logger.config.DD_SITE", None)
+    monkeypatch.setattr("sieve.logger.settings", dev_settings)
+    monkeypatch.setattr("sieve.logger.settings.dd_api_key", None)
+    monkeypatch.setattr("sieve.logger.settings.dd_site", None)
     get_logger(__name__)
-    assert "* * * DD_API_KEY & DD_SITE required" in caplog.text
-
-
-def test_datadog_api_log_client_creation(set_dev_config):
-    reload(logger_)
-    assert isinstance(logger_.DATADOG_LOG_CLIENT, ThreadedApiClient)
+    assert "* * * DD_API_KEY & DD_SITE REQUIRED" in caplog.text
 
 
 def test_json_formatter_parses_debug_payload_correctly():

@@ -1,4 +1,21 @@
+from pydantic.env_settings import SettingsSourceCallable
+
 from sieve.services.driver import DriverProtocol, ElementProtocol
+from sieve.settings import Settings
+
+
+class MockSettings(Settings):
+    """Disables pydantic from sourcing the environment for tests"""
+
+    class Config:
+        @classmethod
+        def customise_sources(
+            cls,
+            init_settings: SettingsSourceCallable,
+            env_settings: SettingsSourceCallable,
+            file_secret_settings: SettingsSourceCallable,
+        ) -> tuple[SettingsSourceCallable, ...]:
+            return (init_settings,)
 
 
 class MockWebElement:

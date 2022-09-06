@@ -3,6 +3,10 @@ services:
     image: sieve:prod
     build:
       target: prod
+    environment:
+      APP_ENV: prod
+      DD_SITE: ${DD_SITE}
+      DD_API_KEY: ${DD_API_KEY}
 
   browserless:
     environment:
