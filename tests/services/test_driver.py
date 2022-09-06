@@ -7,7 +7,8 @@ from sieve.services.driver import Driver, init_driver
 from tests.mocks import MockRemote
 
 
-def test_driver_init_for_dev_config(monkeypatch: MonkeyPatch, set_dev_config):
+def test_driver_init_for_dev_config(monkeypatch: MonkeyPatch, dev_settings):
+    monkeypatch.setattr("sieve.services.driver.settings", dev_settings)
     monkeypatch.setattr("sieve.services.driver.Remote", MockRemote)
 
     driver = init_driver()
@@ -17,7 +18,8 @@ def test_driver_init_for_dev_config(monkeypatch: MonkeyPatch, set_dev_config):
     assert driver.driver.command_executor == "http://localhost:3000/webdriver"
 
 
-def test_driver_init_for_prod_config(monkeypatch: MonkeyPatch, set_prod_config):
+def test_driver_init_for_prod_config(monkeypatch: MonkeyPatch, prod_settings):
+    monkeypatch.setattr("sieve.services.driver.settings", prod_settings)
     monkeypatch.setattr("sieve.services.driver.Remote", MockRemote)
 
     driver = init_driver()

@@ -1,61 +1,77 @@
+# from typing import Literal
+
 import logging
 
-from importlib import reload
+from pytest import fixture
 
-from pytest import MonkeyPatch, fixture
-
-from sieve import config
+from tests.mocks import MockSettings
 
 
-@fixture(scope="function")
-def set_test_config(monkeypatch: MonkeyPatch):
-    monkeypatch.setenv("ENVIRONMENT", "testing")
-    reload(config)
-    yield
-    monkeypatch.setenv("ENVIRONMENT", "testing")
-    reload(config)
+_test_settings = MockSettings(
+    app_env="test",
+    log_level="DEBUG",
+    hostname="localhost",
+    linkedin_email="test_user",
+    linkedin_pass="test_pass",
+    db_name="test_db",
+    db_user="test_user",
+    db_pass="test_pass",
+    db_host="localhost",
+    dd_site="test.datadog.site",
+    dd_api_key="test_api_key",
+    app_name="test_service",
+    driver_width=1200,
+    driver_height=800,
+)
+
+_dev_settings = MockSettings(
+    app_env="dev",
+    log_level=logging.DEBUG,
+    hostname="dev_host",
+    linkedin_email="dev_user",
+    linkedin_pass="dev_pass",
+    db_name="dev_db",
+    db_user="dev_user",
+    db_pass="dev_pass",
+    db_host="dev_host",
+    dd_site="dev.datadog.site",
+    dd_api_key="dev_api_key",
+    app_name="dev_service",
+    driver_width=1200,
+    driver_height=800,
+)
+
+_prod_settings = MockSettings(
+    app_env="prod",
+    log_level=logging.INFO,
+    hostname="prod_host",
+    linkedin_email="prod_user",
+    linkedin_pass="prod_pass",
+    db_name="prod_db",
+    db_user="prod_user",
+    db_pass="prod_pass",
+    db_host="prod_host",
+    dd_site="prod.datadog.site",
+    dd_api_key="prod_api_key",
+    app_name="prod_service",
+    driver_width=1200,
+    driver_height=800,
+)
 
 
-@fixture(scope="function")
-def set_dev_config(monkeypatch: MonkeyPatch):
-    monkeypatch.setenv("ENVIRONMENT", "development")
-    monkeypatch.setenv("HOSTNAME", "dev_host")
-    monkeypatch.setenv("LOG_LEVEL", "DEBUG")
-    monkeypatch.setenv("LINKEDIN_EMAIL", "dev_user")
-    monkeypatch.setenv("LINKEDIN_PASS", "dev_pass")
-    monkeypatch.setenv("DB_NAME", "dev_db")
-    monkeypatch.setenv("DB_USER", "dev_user")
-    monkeypatch.setenv("DB_PASS", "dev_pass")
-    monkeypatch.setenv("DB_HOST", "localhost")
-    monkeypatch.setenv("DD_SITE", "dev.datadog.site")
-    monkeypatch.setenv("DD_API_KEY", "dev_api_key")
-    monkeypatch.setenv("DRIVER_WIDTH", "1200")
-    monkeypatch.setenv("DRIVER_HEIGHT", "800")
-    reload(config)
-    yield
-    monkeypatch.setenv("ENVIRONMENT", "testing")
-    reload(config)
+@fixture
+def test_settings():
+    yield _test_settings
 
 
-@fixture(scope="function")
-def set_prod_config(monkeypatch: MonkeyPatch):
-    monkeypatch.setenv("ENVIRONMENT", "production")
-    monkeypatch.setenv("HOSTNAME", "prod_host")
-    monkeypatch.setenv("LOG_LEVEL", "INFO")
-    monkeypatch.setenv("LINKEDIN_EMAIL", "prod_user")
-    monkeypatch.setenv("LINKEDIN_PASS", "prod_pass")
-    monkeypatch.setenv("DB_NAME", "prod_db")
-    monkeypatch.setenv("DB_USER", "prod_user")
-    monkeypatch.setenv("DB_PASS", "prod_pass")
-    monkeypatch.setenv("DB_HOST", "remote_host")
-    monkeypatch.setenv("DD_SITE", "prod.datadog.site")
-    monkeypatch.setenv("DD_API_KEY", "prod_api_key")
-    monkeypatch.setenv("DRIVER_WIDTH", "1200")
-    monkeypatch.setenv("DRIVER_HEIGHT", "800")
-    reload(config)
-    yield
-    monkeypatch.setenv("ENVIRONMENT", "testing")
-    reload(config)
+@fixture
+def dev_settings():
+    yield _dev_settings
+
+
+@fixture
+def prod_settings():
+    yield _prod_settings
 
 
 @fixture(scope="function")
