@@ -3,6 +3,8 @@ services:
     container_name: sieve
     image: sieve:dev
     restart: unless-stopped
+    networks:
+      - sieve-network
     depends_on:
       - "db"
       - "browserless"
@@ -10,21 +12,21 @@ services:
       context: ..
       dockerfile: ./docker/Dockerfile
       target: dev
-    volumes:
-      - "/dev/shm:/dev/shm"
     environment:
+      APP_ENV: test
       LINKEDIN_EMAIL: ${LINKEDIN_EMAIL}
       LINKEDIN_PASS: ${LINKEDIN_PASS}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_HOST: ${DB_HOST}
-      ENVIRONMENT: testing
 
   db:
     container_name: postgres_db
     image: postgres:sieve
     restart: unless-stopped
+    networks:
+      - sieve-network
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.postgres
@@ -37,6 +39,8 @@ services:
     container_name: browserless
     image: browserless/chrome:latest
     restart: unless-stopped
+    networks:
+      - sieve-network
     ports:
       - "3000:3000"
     environment:
@@ -46,4 +50,8 @@ services:
 
 volumes:
   postgres-db:
+    name: sieve
+
+networks:
+  sieve-network:
     name: sieve
