@@ -15,6 +15,7 @@ selenium = "^4.3.0"
 lxml = "^4.9.1"
 psycopg2-binary = "^2.9.3"
 datadog-api-client = "^2.2.0"
+pydantic = "^1.10.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
@@ -87,6 +88,7 @@ ignore-patterns = []
 ignored-modules = []
 jobs = 0
 suggestion-mode = true
+extension-pkg-whitelist = ["pydantic"]
 disable = [
     "missing-module-docstring",
     "missing-class-docstring",
