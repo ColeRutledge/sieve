@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler as _RotatingFileHandler
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, TextIO
 
 from datadog_api_client import Configuration, ThreadedApiClient
 from datadog_api_client.v2.api.logs_api import LogsApi
@@ -20,19 +20,18 @@ from sieve.settings import settings
 logging.getLogger().setLevel(settings.log_level)
 
 
-# configure datadog api client
 DATADOG_CLIENT = None
 
 
 class DatadogHandler(logging.StreamHandler):
     # pylint: disable = global-statement
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, stream: TextIO | None = None):
         global DATADOG_CLIENT
         if all([not DATADOG_CLIENT, not settings.is_test, settings.dd_api_key, settings.dd_site]):
             DATADOG_CLIENT = ThreadedApiClient(Configuration())
         assert DATADOG_CLIENT, "INVALID DATADOG_CLIENT"
-        super().__init__(*args, **kwargs)
+        super().__init__(stream=stream)
         self.setFormatter(JsonFormatter())
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -138,20 +137,31 @@ class StreamFormatter(logging.Formatter):
 
 
 class StreamHandler(logging.StreamHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(stream=sys.stdout, *args, **kwargs)
+    def __init__(self, stream: TextIO | None = None):
+        super().__init__(stream=sys.stdout)
         self.setFormatter(StreamFormatter())
 
 
 class RotatingFileHandler(_RotatingFileHandler):
-    def __init__(self, *args, **kwargs):
+    # pylint: disable = too-many-arguments
+    def __init__(
+        self,
+        filename: str = "logs/debug.log",
+        mode: str = "a",
+        maxBytes: int = 1024 * 1024,
+        backupCount: int = 2,
+        encoding: str = "utf-8",
+        delay: bool = False,
+        errors: Any | None = None,
+    ):
         super().__init__(
-            filename="logs/debug.log",
-            maxBytes=1024 * 1024,
-            encoding="utf-8",
-            backupCount=2,
-            *args,
-            **kwargs,
+            filename,
+            mode=mode,
+            maxBytes=maxBytes,
+            backupCount=backupCount,
+            encoding=encoding,
+            delay=delay,
+            errors=errors,
         )
         self.setFormatter(
             logging.Formatter("%(asctime)s [%(levelname)s] %(name)s.%(lineno)d: %(message)s")
@@ -173,7 +183,7 @@ COLOR = SimpleNamespace(
 )
 
 
-def add_color(message: str, color):
+def add_color(message: str, color: str) -> str:
     return f"{color}{message}{COLOR.END}"
 
 

@@ -5,7 +5,7 @@ from invoke import Context, task
 from tasks.console import Text, console
 
 
-@task(aliases=["dev", "up"])
+@task(aliases=("dev", "up"))
 def developer_up(c: Context, full: bool = False) -> None:
     console.print(f"{' DEV STARTUP ':~^75}", style="green")
     if full:
@@ -22,37 +22,37 @@ def developer_up(c: Context, full: bool = False) -> None:
         )
 
 
-@task(aliases=["down"])
+@task(aliases=("down",))
 def developer_down(c: Context) -> None:
     console.print(f"{' DEV SHUTDOWN ':~^75}", style="green")
     c.run("docker-compose -f ./docker/docker-compose.yml down --remove-orphans")
 
 
-@task(aliases=["build"])
+@task(aliases=("build",))
 def developer_build(c: Context) -> None:
     console.print(f"{' DEV BUILD ':~^75}", style="green")
     c.run("docker compose -f ./docker/docker-compose.yml build")
 
 
-@task(aliases=["hi"])
+@task(aliases=("hi",))
 def hooks_install(c: Context) -> None:
     console.print("Installing hooks...", style="bold green")
     c.run("pre-commit install")
 
 
-@task(aliases=["hr"])
+@task(aliases=("hr",))
 def hooks_run(c: Context) -> None:
     console.print("Running hooks...", style="bold green")
     c.run("pre-commit run --all-files")
 
 
-@task(hooks_install, hooks_run, aliases=["h"])
+@task(hooks_install, hooks_run, aliases=("h",))
 def hooks(c: Context) -> None:
     # pylint: disable=unused-argument
     pass
 
 
-@task(aliases=["bl"])
+@task(aliases=("bl",))
 def black(c: Context) -> None:
     console.print("Running black...", style="bold green")
     output = io.StringIO()

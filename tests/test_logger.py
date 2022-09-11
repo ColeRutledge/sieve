@@ -94,17 +94,15 @@ def test_datadog_env_var_warning(
 def test_json_formatter_parses_debug_payload_correctly():
     formatter = JsonFormatter()
     record = logging.LogRecord(
-        **{
-            "name": "tests.test_logger",
-            "level": 10,
-            "pathname": "sieve/tests/test_logger.py",
-            "lineno": 100,
-            "msg": "MESSAGE",
-            "args": [],
-            "exc_info": None,
-            "func": "test_json_formatter_parses_debug_payload_correctly",
-            "stack_info": None,
-        }
+        name="tests.test_logger",
+        level=10,
+        pathname="sieve/tests/test_logger.py",
+        lineno=100,
+        msg="MESSAGE",
+        args=tuple(),
+        exc_info=None,
+        func="test_json_formatter_parses_debug_payload_correctly",
+        sinfo=None,
     )
     formatted_record = json.loads(formatter.format(record))
     formatted_record.pop("timestamp")
@@ -125,17 +123,15 @@ def test_json_formatter_parses_exception_payload_correctly():
 
     formatter = JsonFormatter()
     record = logging.LogRecord(
-        **{
-            "name": "tests.test_logger",
-            "level": 40,
-            "pathname": "sieve/tests/test_logger.py",
-            "lineno": 100,
-            "msg": "ERROR",
-            "args": [],
-            "exc_info": exception_info,
-            "func": "test_json_formatter_parses_exception_payload_correctly",
-            "stack_info": None,
-        }
+        name="tests.test_logger",
+        level=40,
+        pathname="sieve/tests/test_logger.py",
+        lineno=100,
+        msg="ERROR",
+        args=tuple(),
+        exc_info=exception_info,
+        func="test_json_formatter_parses_exception_payload_correctly",
+        sinfo=None,
     )
     formatted_record = json.loads(formatter.format(record))
     formatted_record.pop("timestamp")
