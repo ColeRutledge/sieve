@@ -26,7 +26,7 @@ _test_settings = MockSettings(
 
 _dev_settings = MockSettings(
     app_env="dev",
-    log_level=logging.DEBUG,
+    log_level="DEBUG",
     hostname="dev_host",
     linkedin_email="dev_user",
     linkedin_pass="dev_pass",
@@ -43,7 +43,7 @@ _dev_settings = MockSettings(
 
 _prod_settings = MockSettings(
     app_env="prod",
-    log_level=logging.INFO,
+    log_level="INFO",
     hostname="prod_host",
     linkedin_email="prod_user",
     linkedin_pass="prod_pass",

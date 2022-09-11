@@ -1,26 +1,23 @@
-"""Helper module to monkeypatch PyInvoke's default behaviors"""
+"""Patch PyInvoke to allow for type annotations"""
+# https://github.com/pyinvoke/invoke/issues/357#issuecomment-583851322
 
+from collections.abc import Callable
 from inspect import ArgSpec, getfullargspec
 from unittest.mock import patch
 
 import invoke
 
 
-# https://github.com/pyinvoke/invoke/issues/357#issuecomment-583851322
-def fix_annotations():
-    """Patch PyInvoke to allow for type annotations"""
+def patched_inspect_getargspec(func: Callable[..., ArgSpec]) -> ArgSpec:
+    args, varargs, varkw, defaults = getfullargspec(func)[:4]
+    return ArgSpec(args, varargs, varkw, defaults or tuple())
 
-    def patched_inspect_getargspec(func):
-        spec = getfullargspec(func)
-        return ArgSpec(*spec[0:4])
 
-    org_task_argspec = invoke.tasks.Task.argspec
-
-    def patched_task_argspec(*args, **kwargs):
+class Task(invoke.tasks.Task):
+    def argspec(self, body: Callable[..., ArgSpec]) -> tuple[list[str], dict[str, str]]:
         with patch(target="inspect.getargspec", new=patched_inspect_getargspec):
-            return org_task_argspec(*args, **kwargs)
+            argspec: tuple[list[str], dict[str, str]] = super().argspec(body)
+            return argspec
 
-    invoke.tasks.Task.argspec = patched_task_argspec
 
-
-fix_annotations()
+setattr(invoke.tasks, "Task", Task)

@@ -1,6 +1,6 @@
 from pydantic.env_settings import SettingsSourceCallable
 
-from sieve.services.driver import DriverProtocol, ElementProtocol
+from sieve.services.driver import ElementProtocol
 from sieve.settings import Settings
 
 
@@ -19,15 +19,15 @@ class MockSettings(Settings):
 
 
 class MockWebElement:
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         self.text = text
 
     def screenshot(self, filename: str) -> bool:
         return True
 
 
-class TestElement(ElementProtocol):
-    def __init__(self, element: MockWebElement):
+class TestElement:
+    def __init__(self, element: MockWebElement) -> None:
         self._element = element
 
     @property
@@ -39,7 +39,7 @@ class TestElement(ElementProtocol):
 
 
 class MockRemote:
-    def __init__(self, *, command_executor, options):
+    def __init__(self, *, command_executor, options) -> None:
         self.command_executor = command_executor
         self.options = options
         self.width = 1920
@@ -71,8 +71,10 @@ class MockRemote:
         return None
 
 
-class TestDriver(DriverProtocol):
-    def __init__(self, driver: MockRemote):
+class TestDriver:
+    DRIVER_BASE_CONFIG: dict[str, str] = {}
+
+    def __init__(self, driver: MockRemote) -> None:
         self._driver = driver
 
     @property
@@ -87,3 +89,6 @@ class TestDriver(DriverProtocol):
 
     def save_screenshot(self, filename: str) -> bool:
         return True
+
+    def quit(self) -> None:
+        return self.driver.quit()

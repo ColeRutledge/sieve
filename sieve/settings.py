@@ -1,17 +1,18 @@
 """ Environment Variable Management """
 
-import logging
-
 from typing import Literal
 
-from pydantic import BaseSettings, SecretStr, validator
+from pydantic import BaseSettings, SecretStr
+
+
+LogLevelStr = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 class Settings(BaseSettings):
     app_name: str = "sieve"
     app_env: str = "dev"
     hostname: str = "localhost"
-    log_level: Literal[10, 20, 30, 40, 50] = 10
+    log_level: LogLevelStr = "DEBUG"
 
     # db
     db_name: str = "sieve_db"
@@ -42,13 +43,6 @@ class Settings(BaseSettings):
     @property
     def is_test(self) -> bool:
         return self.app_env == "test"
-
-    @validator("log_level", pre=True)
-    def convert_to_level_number(cls, v):
-        # pylint: disable = no-self-argument
-        if v in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-            return logging.getLevelName(v)
-        return v
 
 
 settings = Settings()

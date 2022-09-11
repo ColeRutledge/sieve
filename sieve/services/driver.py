@@ -1,7 +1,7 @@
 import time
 
 from datetime import datetime, timedelta
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ChromeOptions, Remote
@@ -15,6 +15,9 @@ from sieve.settings import settings
 logger = get_logger(__name__)
 
 
+T_co = TypeVar("T_co", covariant=True)
+
+
 class ElementProtocol(Protocol):
     @property
     def text(self) -> str:
@@ -24,8 +27,8 @@ class ElementProtocol(Protocol):
         ...
 
 
-class Element(ElementProtocol):
-    def __init__(self, element: WebElement):
+class Element:
+    def __init__(self, element: WebElement) -> None:
         self._element = element
 
     @property
@@ -36,7 +39,11 @@ class Element(ElementProtocol):
         return self._element.screenshot(filename)
 
 
-class DriverProtocol(Protocol):
+class DriverProtocol(Protocol[T_co]):
+    @property
+    def driver(self) -> T_co:
+        ...
+
     def get(self, url: str) -> None:
         ...
 
@@ -50,7 +57,7 @@ class DriverProtocol(Protocol):
         ...
 
 
-class Driver(DriverProtocol):
+class Driver:
     POLL_INTERVAL = 1
     WAIT_TIME_SECONDS = 5
 
@@ -62,7 +69,7 @@ class Driver(DriverProtocol):
         "dev_shm": "--disable-dev-shm-usage",
     }
 
-    def __init__(self, driver: Remote):
+    def __init__(self, driver: Remote) -> None:
         self._driver = driver
 
     @property
@@ -110,7 +117,7 @@ class Driver(DriverProtocol):
         return [Element(e) for e in elements]
 
 
-def init_driver(option_overrides: dict | None = None) -> Driver:
+def init_driver(option_overrides: dict | None = None) -> DriverProtocol:
     # pylint: disable = expression-not-assigned
 
     options = Driver.DRIVER_BASE_CONFIG | (option_overrides or {})
