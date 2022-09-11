@@ -1,7 +1,5 @@
 # pylint: disable = import-outside-toplevel
 
-import logging
-
 from pydantic import SecretStr
 from pytest import MonkeyPatch
 
@@ -13,7 +11,7 @@ def test_settings_defaults():
     assert settings.dict() == {
         "app_env": "dev",
         "hostname": "localhost",
-        "log_level": logging.DEBUG,
+        "log_level": "DEBUG",
         "db_name": "sieve_db",
         "db_user": SecretStr("sieve_user"),
         "db_pass": SecretStr("pass"),
@@ -34,7 +32,7 @@ def test_test_settings(monkeypatch: MonkeyPatch, test_settings: MockSettings):
 
     assert settings.dict() == {
         "app_env": "test",
-        "log_level": logging.DEBUG,
+        "log_level": "DEBUG",
         "hostname": "localhost",
         "linkedin_email": SecretStr("test_user"),
         "linkedin_pass": SecretStr("test_pass"),
@@ -59,7 +57,7 @@ def test_dev_settings(monkeypatch: MonkeyPatch, dev_settings: MockSettings):
 
     assert settings.dict() == {
         "app_env": "dev",
-        "log_level": logging.DEBUG,
+        "log_level": "DEBUG",
         "hostname": "dev_host",
         "linkedin_email": SecretStr("dev_user"),
         "linkedin_pass": SecretStr("dev_pass"),
@@ -84,7 +82,7 @@ def test_prod_settings(monkeypatch: MonkeyPatch, prod_settings: MockSettings):
 
     assert settings.dict() == {
         "app_env": "prod",
-        "log_level": logging.INFO,
+        "log_level": "INFO",
         "hostname": "prod_host",
         "linkedin_email": SecretStr("prod_user"),
         "linkedin_pass": SecretStr("prod_pass"),
