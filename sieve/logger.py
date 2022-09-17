@@ -200,7 +200,7 @@ def get_logger(name: str, level: str | None = None) -> logging.Logger:
 
     if not settings.is_test:
         logger.warning(
-            "%s* * * DD_API_KEY & DD_SITE REQUIRED -> using default handler * * *%s",
+            "%s* * * DD_API_KEY & DD_SITE REQUIRED -> Using RotatingFileHandler * * *%s",
             COLOR.WARNING,
             COLOR.END,
         )

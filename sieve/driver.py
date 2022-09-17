@@ -15,9 +15,6 @@ from sieve.settings import settings
 logger = get_logger(__name__)
 
 
-T_co = TypeVar("T_co", covariant=True)
-
-
 class ElementProtocol(Protocol):
     @property
     def text(self) -> str:
@@ -37,6 +34,9 @@ class Element:
 
     def screenshot(self, filename: str) -> bool:
         return self._element.screenshot(filename)
+
+
+T_co = TypeVar("T_co", covariant=True)
 
 
 class DriverProtocol(Protocol[T_co]):
@@ -93,6 +93,10 @@ class Driver:
         self.save_screenshot("ss.png")
         raise NoSuchElementException(f"No elements found: {xpath}")
 
+    def _find_elements(self, xpath: str) -> list[Element]:
+        elements = self.driver.find_elements(by=By.XPATH, value=xpath)
+        return [Element(e) for e in elements]
+
     def save_screenshot(self, filename: str) -> bool:
         """Save a PNG screenshot of the browser viewport at max resolution"""
         w, h = self.driver.get_window_size().values()
@@ -109,12 +113,7 @@ class Driver:
             self.driver.set_window_size(w, h)
 
     def quit(self) -> None:
-        """Handle cleanup before closing"""
         self.driver.quit()
-
-    def _find_elements(self, xpath: str) -> list[Element]:
-        elements = self.driver.find_elements(by=By.XPATH, value=xpath)
-        return [Element(e) for e in elements]
 
 
 def init_driver(option_overrides: dict | None = None) -> DriverProtocol:
@@ -127,7 +126,7 @@ def init_driver(option_overrides: dict | None = None) -> DriverProtocol:
     if settings.is_dev:
         logger.info("[driver] dev driver connecting")
         driver = Remote(
-            command_executor="http://localhost:3000/webdriver",
+            command_executor="http://browserless:3000/webdriver",
             options=chrome_options,
         )
 

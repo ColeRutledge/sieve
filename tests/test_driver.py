@@ -1,25 +1,25 @@
 from pytest import LogCaptureFixture, MonkeyPatch, raises
 from selenium.common.exceptions import NoSuchElementException
 
+from sieve.driver import DriverProtocol, init_driver
 from sieve.exceptions import SystemException
-from sieve.services.driver import DriverProtocol, init_driver
 from tests.mocks import MockRemote
 
 
 def test_driver_init_for_dev_config(monkeypatch: MonkeyPatch, dev_settings):
-    monkeypatch.setattr("sieve.services.driver.settings", dev_settings)
-    monkeypatch.setattr("sieve.services.driver.Remote", MockRemote)
+    monkeypatch.setattr("sieve.driver.settings", dev_settings)
+    monkeypatch.setattr("sieve.driver.Remote", MockRemote)
 
     driver = init_driver()
 
     assert hasattr(driver, "element")
     assert hasattr(driver, "_driver")
-    assert driver.driver.command_executor == "http://localhost:3000/webdriver"
+    assert driver.driver.command_executor == "http://browserless:3000/webdriver"
 
 
 def test_driver_init_for_prod_config(monkeypatch: MonkeyPatch, prod_settings):
-    monkeypatch.setattr("sieve.services.driver.settings", prod_settings)
-    monkeypatch.setattr("sieve.services.driver.Remote", MockRemote)
+    monkeypatch.setattr("sieve.driver.settings", prod_settings)
+    monkeypatch.setattr("sieve.driver.Remote", MockRemote)
 
     driver = init_driver()
 

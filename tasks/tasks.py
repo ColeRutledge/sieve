@@ -1,25 +1,27 @@
-import io
-
 from invoke import Context, task
 
-from tasks.console import Text, console
+from tasks.console import console
 
 
 @task(aliases=("dev", "up"))
-def developer_up(c: Context, full: bool = False) -> None:
+def developer_up(c: Context, prod: bool = False, build: bool = False) -> None:
     console.print(f"{' DEV STARTUP ':~^75}", style="green")
-    if full:
-        c.run("docker-compose -f ./docker/docker-compose.yml up -d --build")
-    else:
-        # default -> run with debugpy waiting to connect to debugger
-        c.run(
-            "docker-compose "
-            "-f ./docker/docker-compose.yml "
-            "-f ./docker/docker-compose.debugpy.yml "
-            "up "
-            "-d "
-            "--build"
-        )
+    console.print(f"{prod=} {build=}", style="yellow")
+    console.print(f"{'':~^75}", style="green")
+
+    compose = "-f ./docker/docker-compose.yml"
+    debugpy = "-f ./docker/docker-compose.debugpy.yml"
+
+    match prod, build:
+        case True, True:
+            c.run(f"docker-compose {compose} --build")
+        case True, False:
+            c.run(f"docker-compose {compose} up -d")
+        case False, True:
+            # run with debugpy waiting to connect to debugger
+            c.run(f"docker-compose {compose} {debugpy} up -d --build")
+        case False, False:
+            c.run(f"docker-compose {compose} {debugpy} up -d")
 
 
 @task(aliases=("down",))
@@ -50,29 +52,3 @@ def hooks_run(c: Context) -> None:
 def hooks(c: Context) -> None:
     # pylint: disable=unused-argument
     pass
-
-
-@task(aliases=("bl",))
-def black(c: Context) -> None:
-    console.print("Running black...", style="bold green")
-    output = io.StringIO()
-    c.run(
-        command="black . --diff",
-        out_stream=output,
-        err_stream=output,
-        encoding="utf-8",
-    )
-    console.print(output.getvalue())
-    if "file would be reformatted" not in output.getvalue():
-        return
-    text = Text.assemble(Text("Apply changes? ", style="#EEE8AA"), Text("[y/n]: ", style="#D8BFD8"))
-    should_apply = console.input(text).lower().strip() == "y"
-    if should_apply:
-        output = io.StringIO()
-        c.run(
-            command="black .",
-            out_stream=output,
-            err_stream=output,
-            encoding="utf-8",
-        )
-        console.print(output.getvalue())

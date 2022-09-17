@@ -2,9 +2,10 @@
 
 import logging
 
-from pytest import fixture
+from pytest import MonkeyPatch, fixture
 
-from tests.mocks import MockSettings
+from sieve.driver import init_driver
+from tests.mocks import MockRemote, MockSettings
 
 
 _test_settings = MockSettings(
@@ -59,18 +60,18 @@ _prod_settings = MockSettings(
 )
 
 
-@fixture
-def test_settings():
+@fixture(name="test_settings")
+def test_settings_():
     yield _test_settings
 
 
-@fixture
-def dev_settings():
+@fixture(name="dev_settings")
+def dev_settings_():
     yield _dev_settings
 
 
-@fixture
-def prod_settings():
+@fixture(name="prod_settings")
+def prod_settings_():
     yield _prod_settings
 
 
@@ -79,3 +80,24 @@ def enable_logging():
     logging.disable(logging.NOTSET)
     yield
     logging.disable(logging.CRITICAL)
+
+
+@fixture(name="patch_driver")
+def patch_driver_(monkeypatch: MonkeyPatch):
+    monkeypatch.setattr("sieve.driver.Remote", MockRemote)
+    monkeypatch.setattr("sieve.driver.Driver.POLL_INTERVAL", 0)
+    monkeypatch.setattr("sieve.driver.Driver.WAIT_TIME_SECONDS", 0.1)
+
+
+@fixture
+def dev_driver(monkeypatch: MonkeyPatch, dev_settings: MockSettings, patch_driver):
+    monkeypatch.setattr("sieve.driver.settings", dev_settings)
+    driver = init_driver()
+    yield driver
+
+
+@fixture
+def prod_driver(monkeypatch: MonkeyPatch, prod_settings: MockSettings, patch_driver):
+    monkeypatch.setattr("sieve.driver.settings", prod_settings)
+    driver = init_driver()
+    yield driver

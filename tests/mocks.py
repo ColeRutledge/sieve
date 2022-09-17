@@ -1,6 +1,6 @@
 from pydantic.env_settings import SettingsSourceCallable
 
-from sieve.services.driver import ElementProtocol
+from sieve.driver import ElementProtocol
 from sieve.settings import Settings
 
 
