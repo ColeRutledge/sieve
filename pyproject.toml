@@ -50,17 +50,17 @@ python_version = "3.10"
 exclude = "^(.github/|.venv/)"
 
 # strict mode
-disallow_untyped_defs = "true"
-disallow_any_unimported = "true"
-no_implicit_optional = "true"
-check_untyped_defs = "true"
-warn_return_any = "true"
-warn_unused_ignores = "true"
-show_error_codes = "true"
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
 
 [[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = "false"
+module = ["tests.*"]
+disallow_untyped_defs = false
 
 
 #####################################
@@ -71,9 +71,9 @@ disallow_untyped_defs = "false"
 profile = "black"
 line_length = 100
 # number of lines to place between "import ___" and "from ___ import ___"
-lines_between_types = "1"
+lines_between_types = 1
 # number of lines to place following all imports
-lines_after_imports = "2"
+lines_after_imports = 2
 
 #####################################
 #               PYTEST              #
